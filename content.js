@@ -357,20 +357,14 @@
 
     const meetCode = extractMeetCode(cls.link);
     const initials = cls.teacherInitials || getInitials(cls.teacher);
-    const timeDisplay = cls.startTime && cls.endTime ? `${cls.startTime} - ${cls.endTime}` : (cls.startTime || '');
 
     card.innerHTML = `
       <div class="mg-card-top">
         <div class="mg-tags-group">
           <span class="mg-subject-code">${cls.subjectCode || 'CLASS'}</span>
           ${sessionBadge}
-          ${statusBadge}
         </div>
-        ${timeDisplay ? `
-          <span class="mg-time-slot">
-            ${ICONS.clock} ${timeDisplay}
-          </span>
-        ` : ''}
+        ${statusBadge}
       </div>
       <div class="mg-card-content">
         <h3 class="mg-subject-title" title="${cls.subject}">${cls.subject}</h3>

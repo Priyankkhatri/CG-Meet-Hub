@@ -271,22 +271,6 @@
   color: #c5221f;
 }
 
-.mg-time-slot {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 11px;
-  font-weight: 500;
-  color: #5f6368;
-  white-space: nowrap;
-}
-
-.mg-time-slot svg {
-  width: 13px;
-  height: 13px;
-  fill: #5f6368;
-}
-
 /* Card Content */
 .mg-card-content {
   display: flex;
