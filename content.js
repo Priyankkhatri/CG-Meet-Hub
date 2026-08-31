@@ -1,17 +1,10 @@
 /**
  * CG Meet Hub - Google Meet Class Schedule Content Script
  * 
- * Architecture & Resilience Strategy:
- * 1. Single Source of Truth: Uses CG_MEET_HUB_CLASSES dataset with extensible schema.
- * 2. Atomic Empty-State Detection: Climbs to the full semantic container holding illustration,
- *    heading, subtext, and buttons as a single unit — preventing partial hiding.
- * 3. Stable Marker Attribute (data-cgmeethub-native-hidden): Tags the hidden native container on first run
- *    so subsequent observer batches don't re-derive or progressively hide sibling elements.
- * 4. Hard Rate-Limit Cap (3 attempts / 2s): Halts immediately and logs detailed diagnostics if a render
- *    loop is detected, completely avoiding DOM thrashing.
- * 5. Layout-Safe Liveness (isDashboardHealthy): Validates document attachment without racing synchronous layout.
- * 6. Non-Destructive Hiding: Applies `display: none !important` to the native container.
- * 7. Dev Recovery Helper: Exposes `window.__cgmeethubReset()` / `window.__meetgitaReset()`.
+ * DIAGNOSTIC INSTRUMENTATION PASS:
+ * This build instruments every MutationObserver tick, DOM search/hide action,
+ * dashboard lifecycle event, scroll event, visibility change, and network activity
+ * with unified timestamped logging to diagnose root causes before applying fixes.
  */
 
 (function () {
@@ -21,10 +14,28 @@
   if (window.__cgmeethub_initialized) return;
   window.__cgmeethub_initialized = true;
 
-  const DEBUG = false; // Set to true for verbose logging during development
+  const MEETGITA_DEBUG = true;
 
   /* ==========================================================================
-     1. Class Schedule Dataset (Single Source of Truth)
+     0. Diagnostic Logger Helper
+     ========================================================================== */
+  function logDebug(category, message, extra = null) {
+    if (!MEETGITA_DEBUG) return;
+    const now = new Date();
+    const timeStr = `${now.toTimeString().split(' ')[0]}.${String(now.getMilliseconds()).padStart(3, '0')}`;
+    const visState = document.visibilityState;
+    const prefix = `[MeetGita-Diag | ${timeStr} | vis:${visState}] [${category}]`;
+    if (extra !== null) {
+      console.log(`%c${prefix} ${message}`, 'color: #0b57d0; font-weight: bold;', extra);
+    } else {
+      console.log(`%c${prefix} ${message}`, 'color: #0b57d0; font-weight: bold;');
+    }
+  }
+
+  logDebug('INIT', 'Content script initialized on page: ' + window.location.href);
+
+  /* ==========================================================================
+     1. Class Schedule Dataset
      ========================================================================== */
   const CG_MEET_HUB_CLASSES = [
     {
@@ -38,7 +49,7 @@
       link: "https://meet.google.com/zkb-hdxv-aba",
       startTime: "09:00 AM",
       endTime: "10:30 AM",
-      status: "upcoming", // "live" | "upcoming" | "completed"
+      status: "upcoming",
     },
     {
       id: "react-2",
@@ -147,29 +158,7 @@
   ];
 
   /* ==========================================================================
-     2. Phase 2 Timetable Helper Functions
-     ========================================================================== */
-  function parseTimeToMinutes(timeStr) {
-    if (!timeStr) return 0;
-    const [time, meridian] = timeStr.split(" ");
-    let [hours, minutes] = time.split(":").map(Number);
-    if (meridian === "PM" && hours !== 12) hours += 12;
-    if (meridian === "AM" && hours === 12) hours = 0;
-    return hours * 60 + minutes;
-  }
-
-  function computeClassStatus(cls, now = new Date()) {
-    if (!cls.startTime || !cls.endTime) return cls.status || "upcoming";
-    const nowMinutes = now.getHours() * 60 + now.getMinutes();
-    const start = parseTimeToMinutes(cls.startTime);
-    const end = parseTimeToMinutes(cls.endTime);
-    if (nowMinutes >= start && nowMinutes <= end) return "live";
-    if (nowMinutes < start) return "upcoming";
-    return "completed";
-  }
-
-  /* ==========================================================================
-     3. SVG Icons (Material Symbols / Google Style)
+     2. SVG Icons
      ========================================================================== */
   const ICONS = {
     calendarHeader: `<svg viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20a2 2 0 0 0 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2zM7 12h5v5H7z"/></svg>`,
@@ -181,33 +170,37 @@
   };
 
   /* ==========================================================================
-     4. Rate-Limiting & Diagnostic Controls
+     3. State & Controls
      ========================================================================== */
   let activeFilter = 'all';
   let observer = null;
   let isInjecting = false;
   let isHaltedDueToLoop = false;
+  let mutationCount = 0;
   
-  // Strict attempt cap: max 3 attempts within 2000ms
   const injectionTimestamps = [];
   const MAX_INJECTIONS_WINDOW_MS = 2000;
   const MAX_INJECTIONS_CAP = 3;
 
   function canProceedWithInjection() {
-    if (isHaltedDueToLoop) return false;
+    if (isHaltedDueToLoop) {
+      logDebug('RATE_LIMIT', 'Blocked injection: engine halted due to previous loop detection.');
+      return false;
+    }
 
     const now = Date.now();
     injectionTimestamps.push(now);
 
-    // Prune entries older than 2s
     while (injectionTimestamps.length > 0 && injectionTimestamps[0] < now - MAX_INJECTIONS_WINDOW_MS) {
       injectionTimestamps.shift();
     }
 
+    logDebug('RATE_LIMIT', `Injection attempt #${injectionTimestamps.length} in current ${MAX_INJECTIONS_WINDOW_MS}ms window`);
+
     if (injectionTimestamps.length > MAX_INJECTIONS_CAP) {
       isHaltedDueToLoop = true;
       console.error(
-        '[CG Meet Hub] CRITICAL: Injection attempt cap exceeded (more than 3 attempts in 2s) — halting injection to prevent render loop.',
+        '[MeetGita-Diag] CRITICAL: Injection attempt cap exceeded (more than 3 attempts in 2s) — halting injection.',
         {
           timestamps: [...injectionTimestamps],
           activeDashboard: document.getElementById('cgmeethub-dashboard'),
@@ -222,7 +215,6 @@
 
   function isMeetHomePage() {
     const pathname = window.location.pathname;
-    // Avoid active video call rooms (meet.google.com/xxx-yyyy-zzz)
     const isMeetingRoom = /\/[a-z]{3}-[a-z]{4}-[a-z]{3}/i.test(pathname);
     if (isMeetingRoom) return false;
 
@@ -237,15 +229,28 @@
     );
   }
 
-  /**
-   * Layout-Safe Liveness Check: verifies attached DOM presence without racing layout.
-   */
   function isDashboardHealthy() {
     const dashboard = document.getElementById('cgmeethub-dashboard') || document.getElementById('meetgita-dashboard');
-    if (!dashboard) return false;
-    if (!document.body.contains(dashboard)) return false;
-    if (dashboard.parentElement === null) return false;
-    if (dashboard.style.display === 'none') return false;
+    if (!dashboard) {
+      logDebug('HEALTH_CHECK', 'isDashboardHealthy = false (element not found in DOM by ID)');
+      return false;
+    }
+    if (!document.body.contains(dashboard)) {
+      logDebug('HEALTH_CHECK', 'isDashboardHealthy = false (element found by ID but NOT in document.body)');
+      return false;
+    }
+    if (dashboard.parentElement === null) {
+      logDebug('HEALTH_CHECK', 'isDashboardHealthy = false (parentElement is null)');
+      return false;
+    }
+    if (dashboard.style.display === 'none') {
+      logDebug('HEALTH_CHECK', 'isDashboardHealthy = false (style.display is none)');
+      return false;
+    }
+    logDebug('HEALTH_CHECK', 'isDashboardHealthy = true', {
+      parent: dashboard.parentElement.tagName,
+      siblingCount: dashboard.parentElement.children.length
+    });
     return true;
   }
 
@@ -306,27 +311,28 @@
         buttonElement.setAttribute('data-tooltip', 'Copy meeting link');
       }, 2000);
     } catch (err) {
-      console.error('[CG Meet Hub] Error copying link:', err);
+      console.error('[MeetGita-Diag] Error copying link:', err);
     }
   }
 
   /* ==========================================================================
-     5. Atomic Empty-State Target Locator
+     4. Atomic Empty-State Target Locator with Detailed Logging
      ========================================================================== */
 
-  /**
-   * Locates the entire empty state card container holding illustration, heading,
-   * subtext ("Schedule a meeting..."), and action buttons as ONE single atomic unit.
-   */
   function findNativeEmptyStateContainer() {
-    // 1. Fast path: Check for our stable marker attribute
+    // 1. Fast path: Marked element
     const marked = document.querySelector('[data-cgmeethub-native-hidden="true"]');
     if (marked && document.body.contains(marked)) {
-      if (DEBUG) console.log('[CG Meet Hub] Found existing marked native container:', marked);
+      logDebug('FIND_CONTAINER', 'Fast path: Found existing [data-cgmeethub-native-hidden="true"] marker', {
+        tag: marked.tagName,
+        snippet: marked.outerHTML.slice(0, 100),
+        parent: marked.parentElement ? marked.parentElement.tagName : null
+      });
       return marked;
     }
 
-    // 2. Full TreeWalker Search: scan for empty-state text phrases
+    // 2. Full TreeWalker search
+    logDebug('FIND_CONTAINER', 'Running TreeWalker text search for empty state phrases...');
     const searchPhrases = [
       'No meetings scheduled for today',
       'Schedule a meeting or enjoy the free time',
@@ -356,7 +362,8 @@
           let textElem = node.parentElement;
           if (!textElem) continue;
 
-          // Climb upwards to find the encompassing right-column card / column wrapper
+          logDebug('FIND_CONTAINER', `Matched text phrase: "${phrase}" inside <${textElem.tagName}>`);
+
           let current = textElem;
           let candidate = null;
 
@@ -364,14 +371,12 @@
             const parent = current.parentElement;
             if (!parent || parent === document.body) break;
 
-            // Check if parent is the main landing 2-column container or main tag
             const isMainGridParent = parent.tagName === 'MAIN' || parent.getAttribute('role') === 'main';
             const isTwoColumnSplit = parent.children.length >= 2 && Array.from(parent.children).some(c => 
               c !== current && c.querySelector && c.querySelector('button, input[placeholder*="code" i], input[aria-label*="code" i]')
             );
 
             if (isTwoColumnSplit || isMainGridParent || current.getAttribute('role') === 'region') {
-              // Ensure candidate contains the full empty-state unit (not just the heading)
               candidate = current;
               break;
             }
@@ -381,18 +386,23 @@
           }
 
           if (candidate && candidate !== document.body) {
-            if (DEBUG) console.log('[CG Meet Hub] Resolved full native empty-state container:', candidate);
+            logDebug('FIND_CONTAINER', 'Resolved candidate container via TreeWalker climb:', {
+              tag: candidate.tagName,
+              snippet: candidate.outerHTML.slice(0, 120),
+              parent: candidate.parentElement ? candidate.parentElement.tagName : null
+            });
             return candidate;
           }
         }
       }
     }
 
+    logDebug('FIND_CONTAINER', 'TreeWalker found NO matching empty state text nodes.');
     return null;
   }
 
   /* ==========================================================================
-     6. Card & Dashboard Rendering
+     5. Card & Dashboard Rendering
      ========================================================================== */
 
   function renderCard(cls) {
@@ -486,6 +496,9 @@
   }
 
   function createDashboardElement() {
+    logDebug('DASHBOARD_LIFECYCLE', 'createDashboardElement() called');
+    if (MEETGITA_DEBUG) console.trace('[MeetGita-Diag] Stack trace for createDashboardElement:');
+
     const dashboard = document.createElement('div');
     dashboard.id = 'cgmeethub-dashboard';
 
@@ -544,109 +557,126 @@
     cardsGrid.className = 'mg-cards-grid';
     dashboard.appendChild(cardsGrid);
 
+    // Instrument card grid scroll
+    cardsGrid.addEventListener('scroll', (e) => {
+      logDebug('SCROLL_DASHBOARD', `Card grid scrolled: scrollTop=${e.target.scrollTop}, scrollHeight=${e.target.scrollHeight}`);
+    }, { passive: true });
+
     renderCards(dashboard);
 
     return dashboard;
   }
 
   /* ==========================================================================
-     7. Deterministic Atomic Injection Routine
+     6. Injection Routine with Trace Logging
      ========================================================================== */
 
-  function tryInjectDashboard() {
-    if (isInjecting || isHaltedDueToLoop) return;
+  function tryInjectDashboard(triggerSource = 'unknown') {
+    logDebug('INJECT_CYCLE', `tryInjectDashboard() invoked by [${triggerSource}]`);
+
+    if (isInjecting || isHaltedDueToLoop) {
+      logDebug('INJECT_CYCLE', `Skipped: isInjecting=${isInjecting}, isHaltedDueToLoop=${isHaltedDueToLoop}`);
+      return;
+    }
 
     if (!isMeetHomePage()) {
+      logDebug('INJECT_CYCLE', 'Not on Google Meet home page. Checking for cleanup...');
       const existing = document.getElementById('cgmeethub-dashboard') || document.getElementById('meetgita-dashboard');
-      if (existing) existing.remove();
+      if (existing) {
+        logDebug('DASHBOARD_LIFECYCLE', 'Removing dashboard (navigated away from home page)');
+        existing.remove();
+      }
       return;
     }
 
     const nativeContainer = findNativeEmptyStateContainer();
     const existingDashboard = document.getElementById('cgmeethub-dashboard') || document.getElementById('meetgita-dashboard');
 
-    // 1. Native container handling
     if (nativeContainer) {
-      // Mark as hidden with stable attribute
       nativeContainer.dataset.cgmeethubNativeHidden = "true";
       if (nativeContainer.style.display !== 'none') {
+        logDebug('HIDE_NATIVE', `Applying display: none !important to native container: <${nativeContainer.tagName}>`, {
+          snippet: nativeContainer.outerHTML.slice(0, 100)
+        });
         nativeContainer.style.setProperty('display', 'none', 'important');
         nativeContainer.classList.add('cgmeethub-hidden-native');
         nativeContainer.classList.add('meetgita-hidden-native');
       }
 
-      // Check if existing dashboard is already healthy and correctly positioned
       if (
         isDashboardHealthy() &&
         existingDashboard &&
         existingDashboard.parentElement === nativeContainer.parentElement &&
         existingDashboard.nextElementSibling === nativeContainer
       ) {
-        return; // Completely healthy and in place!
+        logDebug('INJECT_CYCLE', 'Dashboard already healthy, correctly placed before nativeContainer. No action needed.');
+        return;
       }
     } else {
-      // Native container not currently found
       if (isDashboardHealthy()) {
-        return; // Dashboard already live and attached, nothing to do
+        logDebug('INJECT_CYCLE', 'Native container not found, but dashboard is healthy and in DOM. No action needed.');
+        return;
       }
     }
 
-    // If native container is missing or has no parent, cannot insert yet
     if (!nativeContainer || !nativeContainer.parentElement) {
+      logDebug('INJECT_CYCLE', 'Cannot inject: nativeContainer or parentElement is null.', {
+        nativeContainerExists: !!nativeContainer,
+        parentExists: !!(nativeContainer && nativeContainer.parentElement)
+      });
       return;
     }
 
-    // Rate-limiting check: Stop if loop detected
     if (!canProceedWithInjection()) {
       return;
     }
 
-    // Execute atomic injection
     isInjecting = true;
+    logDebug('DASHBOARD_LIFECYCLE', 'Starting DOM write: creating and inserting dashboard...');
 
     try {
       if (existingDashboard) {
+        logDebug('DASHBOARD_LIFECYCLE', 'Removing stale existingDashboard before inserting fresh one');
+        if (MEETGITA_DEBUG) console.trace('[MeetGita-Diag] Stack trace for existingDashboard.remove():');
         existingDashboard.remove();
       }
 
       const dashboard = createDashboardElement();
       nativeContainer.parentElement.insertBefore(dashboard, nativeContainer);
-      console.log('[CG Meet Hub] Injected class schedule inline into page flow.');
+      logDebug('DASHBOARD_LIFECYCLE', 'Dashboard successfully inserted before nativeContainer in parent <' + nativeContainer.parentElement.tagName + '>');
     } catch (err) {
-      console.error('[CG Meet Hub] Injection error:', err);
+      console.error('[MeetGita-Diag] Injection exception:', err);
     } finally {
-      // Release mutex on next tick
       setTimeout(() => {
         isInjecting = false;
+        logDebug('INJECT_CYCLE', 'Mutex released (isInjecting = false)');
       }, 60);
     }
   }
 
   /* ==========================================================================
-     8. Dev Recovery Helper
+     7. Dev Recovery Helper
      ========================================================================== */
 
   window.__cgmeethubReset = window.__meetgitaReset = function () {
-    console.log('[CG Meet Hub] Executing developer reset...');
+    logDebug('DEV_RESET', 'Manual developer reset invoked.');
     isHaltedDueToLoop = false;
     injectionTimestamps.length = 0;
 
-    // Restore all hidden elements
     document.querySelectorAll('[data-cgmeethub-native-hidden="true"], .cgmeethub-hidden-native, .meetgita-hidden-native').forEach(el => {
       el.style.display = '';
       delete el.dataset.cgmeethubNativeHidden;
       el.classList.remove('cgmeethub-hidden-native', 'meetgita-hidden-native');
     });
 
-    // Remove injected dashboard
     const dashboard = document.getElementById('cgmeethub-dashboard') || document.getElementById('meetgita-dashboard');
     if (dashboard) dashboard.remove();
 
-    console.log('[CG Meet Hub] Reset complete. Native Meet UI restored.');
+    console.log('[MeetGita-Diag] Reset complete. Native Meet UI restored.');
   };
 
   /* ==========================================================================
-     9. Persistent Lifecycle & Observer Listeners
+     8. Persistent Observer & Global Event Diagnostics
      ========================================================================== */
 
   function setupPersistentObserver() {
@@ -655,57 +685,120 @@
     }
 
     let debounceTimer = null;
-    observer = new MutationObserver(() => {
-      if (isInjecting || isHaltedDueToLoop) return;
+    observer = new MutationObserver((mutationsList) => {
+      mutationCount++;
+      const added = [];
+      const removed = [];
+      let attrChanges = 0;
+
+      for (const m of mutationsList) {
+        if (m.type === 'childList') {
+          for (const node of m.addedNodes) {
+            if (node.nodeType === Node.ELEMENT_NODE) added.push(`<${node.tagName.toLowerCase()}>`);
+          }
+          for (const node of m.removedNodes) {
+            if (node.nodeType === Node.ELEMENT_NODE) removed.push(`<${node.tagName.toLowerCase()}>`);
+          }
+        } else if (m.type === 'attributes') {
+          attrChanges++;
+        }
+      }
+
+      logDebug('MUTATION_OBSERVER', `Batch #${mutationCount}: ${mutationsList.length} mutations (added: [${added.slice(0, 5).join(', ')}], removed: [${removed.slice(0, 5).join(', ')}], attrs: ${attrChanges})`);
+
+      if (isInjecting || isHaltedDueToLoop) {
+        logDebug('MUTATION_OBSERVER', `Ignored batch #${mutationCount}: isInjecting=${isInjecting}, isHaltedDueToLoop=${isHaltedDueToLoop}`);
+        return;
+      }
+
       if (debounceTimer) clearTimeout(debounceTimer);
       debounceTimer = setTimeout(() => {
-        tryInjectDashboard();
+        tryInjectDashboard(`mutation-debounce-#${mutationCount}`);
       }, 80);
     });
 
     observer.observe(document.body || document.documentElement, {
       childList: true,
-      subtree: true
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['style', 'class', 'hidden']
     });
+
+    logDebug('OBSERVER_INIT', 'Persistent MutationObserver actively observing document');
   }
 
-  // Initial Boot
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-      tryInjectDashboard();
-      setupPersistentObserver();
-    });
-  } else {
-    tryInjectDashboard();
-    setupPersistentObserver();
-  }
+  // Window/Document Scroll Listeners
+  window.addEventListener('scroll', () => {
+    logDebug('SCROLL_WINDOW', `Window scroll event: scrollY=${window.scrollY}, scrollX=${window.scrollX}, docHeight=${document.documentElement.scrollHeight}`);
+  }, { passive: true });
 
-  // Handle tab switching & window focus immediately
+  document.addEventListener('scroll', (e) => {
+    if (e.target !== window && e.target !== document) {
+      const tag = e.target.tagName ? e.target.tagName.toLowerCase() : 'unknown';
+      const id = e.target.id ? `#${e.target.id}` : '';
+      const cls = e.target.className ? `.${String(e.target.className).slice(0, 30)}` : '';
+      logDebug('SCROLL_ELEMENT', `Element scroll event on <${tag}${id}${cls}>: scrollTop=${e.target.scrollTop}`);
+    }
+  }, { passive: true, capture: true });
+
+  // Tab visibility
   document.addEventListener('visibilitychange', () => {
+    logDebug('VISIBILITY_CHANGE', `visibilityState changed to: ${document.visibilityState}`);
     if (!document.hidden && !isHaltedDueToLoop) {
-      tryInjectDashboard();
+      tryInjectDashboard('visibilitychange');
     }
   });
 
   window.addEventListener('focus', () => {
+    logDebug('WINDOW_FOCUS', 'Window received focus event');
     if (!isHaltedDueToLoop) {
-      tryInjectDashboard();
+      tryInjectDashboard('window-focus');
     }
   });
 
-  // SPA navigation handling
-  window.addEventListener('popstate', tryInjectDashboard);
+  window.addEventListener('blur', () => {
+    logDebug('WINDOW_BLUR', 'Window blur event');
+  });
+
+  // SPA navigation
+  window.addEventListener('popstate', () => {
+    logDebug('SPA_NAV', 'popstate event');
+    tryInjectDashboard('popstate');
+  });
 
   const origPushState = history.pushState;
   history.pushState = function () {
+    logDebug('SPA_NAV', 'history.pushState called with: ' + arguments[2]);
     origPushState.apply(this, arguments);
-    setTimeout(tryInjectDashboard, 80);
+    setTimeout(() => tryInjectDashboard('pushState'), 80);
   };
 
   const origReplaceState = history.replaceState;
   history.replaceState = function () {
+    logDebug('SPA_NAV', 'history.replaceState called with: ' + arguments[2]);
     origReplaceState.apply(this, arguments);
-    setTimeout(tryInjectDashboard, 80);
+    setTimeout(() => tryInjectDashboard('replaceState'), 80);
   };
+
+  // Intercept fetch & XHR to diagnose Meet background network calls during scroll
+  const origFetch = window.fetch;
+  window.fetch = function () {
+    const url = arguments[0] ? (typeof arguments[0] === 'string' ? arguments[0] : arguments[0].url) : 'unknown';
+    logDebug('NETWORK_FETCH', `fetch() called for URL: ${url}`);
+    return origFetch.apply(this, arguments);
+  };
+
+  // Initial boot
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      logDebug('DOM_READY', 'DOMContentLoaded fired');
+      tryInjectDashboard('DOMContentLoaded');
+      setupPersistentObserver();
+    });
+  } else {
+    logDebug('DOM_READY', 'Document already ready at script execution time');
+    tryInjectDashboard('immediate-boot');
+    setupPersistentObserver();
+  }
 
 })();
