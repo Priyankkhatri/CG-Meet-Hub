@@ -1,12 +1,11 @@
 /**
  * MeetGita - Google Meet Class Schedule Dashboard Content Script
- * Injects a Google Material 3 class schedule into the Google Meet homepage.
+ * Seamlessly replaces the native empty state container in the normal DOM flow.
  */
 
 (function () {
   'use strict';
 
-  // Prevent duplicate script execution
   if (window.__meetgita_injected) return;
   window.__meetgita_injected = true;
 
@@ -61,7 +60,7 @@
   ];
 
   /* ==========================================================================
-     2. SVG Icons (Material Symbols / Google Style)
+     2. SVG Icons (Google Material Design)
      ========================================================================== */
   const ICONS = {
     meetLogo: `<svg viewBox="0 0 24 24"><path d="M19 4H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm-2 10.5V9.5l4-2.5v10l-4-2.5z"/></svg>`,
@@ -75,17 +74,13 @@
   /* ==========================================================================
      3. State Management
      ========================================================================== */
-  let activeFilter = 'all'; // 'all' | 'live' | 'upcoming'
+  let activeFilter = 'all';
   let injectionInProgress = false;
 
   /* ==========================================================================
      4. Helper Functions
      ========================================================================== */
 
-  /**
-   * Check if current page is Google Meet home/landing page
-   * (Do not inject inside an active video call room like /xxx-yyyy-zzz)
-   */
   function isMeetHomePage() {
     const pathname = window.location.pathname;
     const isMeetingRoom = /\/[a-z]{3}-[a-z]{4}-[a-z]{3}/i.test(pathname);
@@ -102,18 +97,11 @@
     );
   }
 
-  /**
-   * Format today's date in Google style: e.g. "Monday, Aug 31"
-   */
   function getFormattedToday() {
     const now = new Date();
-    const options = { weekday: 'long', month: 'short', day: 'numeric' };
-    return now.toLocaleDateString('en-US', options);
+    return now.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
   }
 
-  /**
-   * Get teacher initials for avatar
-   */
   function getInitials(name) {
     if (!name) return 'MG';
     const parts = name.replace(/^(Prof\.|Dr\.|Mr\.|Ms\.|Mrs\.)\s*/i, '').trim().split(/\s+/);
@@ -123,9 +111,6 @@
     return parts[0].substring(0, 2).toUpperCase();
   }
 
-  /**
-   * Show feedback toast notification
-   */
   function showToast(message) {
     let toast = document.querySelector('.mg-toast');
     if (!toast) {
@@ -141,9 +126,6 @@
     }, 2400);
   }
 
-  /**
-   * Copy meet link to clipboard
-   */
   async function copyMeetLink(link, buttonElement) {
     try {
       if (navigator.clipboard && window.isSecureContext) {
@@ -160,7 +142,6 @@
         textArea.remove();
       }
 
-      // Visual feedback on button
       buttonElement.classList.add('copied');
       buttonElement.innerHTML = ICONS.check;
       buttonElement.setAttribute('data-tooltip', 'Link Copied!');
@@ -178,7 +159,7 @@
   }
 
   /* ==========================================================================
-     5. Dashboard DOM Builder
+     5. Dashboard DOM Builder (Inline Flow)
      ========================================================================== */
 
   function createDashboardElement() {
@@ -188,7 +169,7 @@
     const liveCount = CLASS_SCHEDULE.filter(c => c.status === 'live').length;
     const upcomingCount = CLASS_SCHEDULE.filter(c => c.status === 'upcoming').length;
 
-    // 1. Header
+    // Header
     const header = document.createElement('div');
     header.className = 'mg-header';
     header.innerHTML = `
@@ -226,7 +207,6 @@
       </div>
     `;
 
-    // Filter chip click handler
     header.querySelectorAll('.mg-filter-chip').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.preventDefault();
@@ -241,9 +221,9 @@
 
     dashboard.appendChild(header);
 
-    // 2. Cards List Container
+    // 2-Column Cards Grid Container
     const cardsContainer = document.createElement('div');
-    cardsContainer.className = 'mg-cards-list';
+    cardsContainer.className = 'mg-cards-grid';
     dashboard.appendChild(cardsContainer);
 
     renderCards(dashboard);
@@ -252,7 +232,7 @@
   }
 
   function renderCards(dashboard) {
-    const container = dashboard.querySelector('.mg-cards-list');
+    const container = dashboard.querySelector('.mg-cards-grid');
     if (!container) return;
 
     container.innerHTML = '';
@@ -279,7 +259,7 @@
       card.className = `mg-card ${cls.status === 'live' ? 'is-live' : ''}`;
 
       const statusBadge = cls.status === 'live'
-        ? `<span class="mg-status-badge live"><span class="mg-pulsing-dot"></span> LIVE NOW</span>`
+        ? `<span class="mg-status-badge live"><span class="mg-pulsing-dot"></span> LIVE</span>`
         : `<span class="mg-status-badge upcoming">Upcoming</span>`;
 
       card.innerHTML = `
@@ -293,15 +273,17 @@
           </span>
         </div>
         <div class="mg-card-content">
-          <h3 class="mg-subject-title">${cls.subject}</h3>
+          <h3 class="mg-subject-title" title="${cls.subject}">${cls.subject}</h3>
           <div class="mg-teacher-row">
             <div class="mg-avatar">${getInitials(cls.teacherName)}</div>
-            <span class="mg-teacher-name">${cls.teacherName}</span>
-            <span class="mg-teacher-dept">• ${cls.department}</span>
+            <div class="mg-teacher-info">
+              <span class="mg-teacher-name">${cls.teacherName}</span>
+              <span class="mg-teacher-dept">${cls.department}</span>
+            </div>
           </div>
         </div>
         <div class="mg-card-actions">
-          <span class="mg-link-preview" title="${cls.meetLink}">meet.google.com/${cls.meetCode}</span>
+          <span class="mg-link-preview" title="${cls.meetLink}">${cls.meetCode}</span>
           <div class="mg-action-buttons">
             <button type="button" class="mg-btn-icon" data-tooltip="Copy meeting link" aria-label="Copy meeting link">
               ${ICONS.copy}
@@ -313,7 +295,6 @@
         </div>
       `;
 
-      // Copy link button handler
       const copyBtn = card.querySelector('.mg-btn-icon');
       copyBtn.addEventListener('click', (e) => {
         e.preventDefault();
@@ -326,71 +307,67 @@
   }
 
   /* ==========================================================================
-     6. Target DOM Identification & Insertion
+     6. Strict DOM Replacement & Inline Injection
      ========================================================================== */
 
   /**
-   * Search for Google Meet's right-side empty state / carousel container
+   * Locate the specific container holding the empty state / illustration
    */
-  function findMeetTargetContainer() {
-    // Meet typically places the empty state / carousel in the right column of the main section.
-    // Selector Strategy 1: Find the carousel / slide container holding the illustration images or SVGs
-    const candidates = [
-      // Carousel wrapper region or slide containers
-      'div[role="region"][aria-label*="carousel" i]',
-      'div[role="region"]',
-      'c-wiz div[jscontroller] > div:has(img[src*="googleusercontent"])',
-      'div:has(> div > img[src*="googleusercontent"])',
-      'div:has(> img[alt*="meeting" i])',
-      'div:has(> button[aria-label*="Next slide" i])',
-      'div:has(> button[aria-label*="Previous slide" i])',
-      // Class-based selectors in Meet's landing layout
-      '.g3VIeb',
-      'div[data-carousel-item]',
-      'c-wiz[data-node-index="0;1"]',
-      'c-wiz[data-node-index="0;2"]'
-    ];
-
-    for (const selector of candidates) {
-      try {
-        const el = document.querySelector(selector);
-        if (el && el.offsetParent !== null) {
-          return { target: el, type: 'carousel' };
-        }
-      } catch (_) {}
-    }
-
-    // Strategy 2: Look for the main container holding the two columns (Hero actions on left, Carousel on right)
-    const mainCols = document.querySelectorAll('c-wiz, main, div[role="main"], div[jscontroller]');
-    for (const container of mainCols) {
-      // Find a container that has child columns
-      const directChildren = Array.from(container.children).filter(c => c.tagName === 'DIV');
-      if (directChildren.length >= 2) {
-        // If left child has "New meeting" button or join code input, right child is our target!
-        const hasLeftMeetingActions = directChildren[0].querySelector('button, input[placeholder*="code" i], input[aria-label*="code" i]');
-        if (hasLeftMeetingActions && directChildren[1]) {
-          return { target: directChildren[1], type: 'right-column' };
-        }
-      }
-    }
-
-    // Strategy 3: Find any element containing "No meetings scheduled" or "Get a link you can share" or "Plan ahead"
-    const textHeadings = document.querySelectorAll('h2, h3, div, span, p');
-    for (const el of textHeadings) {
-      const text = el.textContent || '';
+  function findNativeEmptyStateContainer() {
+    // 1. Check for elements with explicit empty state text
+    const textNodes = document.querySelectorAll('h2, h3, div, span, p');
+    for (const el of textNodes) {
+      const text = (el.textContent || '').trim();
       if (
+        text.includes('No meetings scheduled for today') ||
         text.includes('No meetings scheduled') ||
         text.includes('Get a link you can share') ||
         text.includes('Plan ahead') ||
         text.includes('Your meeting is safe')
       ) {
-        // Find the top carousel/empty-state card wrapper
+        // Traverse up to find the top container card of this right column section
         let parent = el.parentElement;
-        for (let i = 0; i < 5 && parent; i++) {
-          if (parent.tagName === 'DIV' && parent.children.length <= 4) {
-            return { target: parent, type: 'empty-state-parent' };
+        for (let i = 0; i < 6 && parent; i++) {
+          if (
+            parent.getAttribute('role') === 'region' ||
+            parent.classList.contains('g3VIeb') ||
+            (parent.tagName === 'DIV' && parent.parentElement && parent.parentElement.children.length >= 2)
+          ) {
+            return parent;
           }
           parent = parent.parentElement;
+        }
+        return el.closest('div[role="region"]') || el.parentElement;
+      }
+    }
+
+    // 2. Check for carousel/region selectors
+    const carouselCandidates = [
+      'div[role="region"][aria-label*="carousel" i]',
+      'div[role="region"]',
+      'div[data-carousel-item]',
+      'c-wiz div[jscontroller] > div:has(img[src*="googleusercontent"])',
+      'div:has(> div > img[src*="googleusercontent"])',
+      'div:has(> button[aria-label*="Next slide" i])'
+    ];
+
+    for (const sel of carouselCandidates) {
+      try {
+        const el = document.querySelector(sel);
+        if (el && el.offsetParent !== null) {
+          return el;
+        }
+      } catch (_) {}
+    }
+
+    // 3. Fallback: Right-side column sibling in the landing layout
+    const mainCols = document.querySelectorAll('c-wiz, main, div[role="main"], div[jscontroller]');
+    for (const container of mainCols) {
+      const directChildren = Array.from(container.children).filter(c => c.tagName === 'DIV');
+      if (directChildren.length >= 2) {
+        const hasMeetingControls = directChildren[0].querySelector('button, input[placeholder*="code" i], input[aria-label*="code" i]');
+        if (hasMeetingControls && directChildren[1]) {
+          return directChildren[1];
         }
       }
     }
@@ -399,42 +376,39 @@
   }
 
   /**
-   * Main injection routine
+   * Main Inline Injection Routine
    */
   function tryInjectDashboard() {
     if (!isMeetHomePage()) {
-      // If we moved away from home (into a call room), remove dashboard if present
       const existing = document.getElementById('meetgita-dashboard');
       if (existing) existing.remove();
       return;
     }
 
-    if (document.getElementById('meetgita-dashboard')) {
-      return; // Already cleanly injected
+    // If dashboard already exists in document, ensure native remains hidden
+    const existingDashboard = document.getElementById('meetgita-dashboard');
+    const target = findNativeEmptyStateContainer();
+
+    if (target) {
+      // Strictly hide native container with display: none !important
+      target.classList.add('meetgita-hidden-native');
+      target.style.setProperty('display', 'none', 'important');
+    }
+
+    if (existingDashboard) {
+      return; // Already present in DOM flow
     }
 
     if (injectionInProgress) return;
     injectionInProgress = true;
 
     try {
-      const result = findMeetTargetContainer();
-      if (result && result.target) {
-        const targetEl = result.target;
-
-        // Hide native carousel/empty state cleanly
-        targetEl.classList.add('meetgita-hidden-native');
-
-        // Create dashboard
+      if (target && target.parentElement) {
         const dashboard = createDashboardElement();
 
-        // Insert dashboard in target's parent right before or after it
-        if (targetEl.parentElement) {
-          targetEl.parentElement.insertBefore(dashboard, targetEl);
-        } else {
-          targetEl.appendChild(dashboard);
-        }
-
-        console.log('[MeetGita] Class schedule dashboard successfully injected!');
+        // Inject cleanly into natural DOM flow right before the hidden native container
+        target.parentElement.insertBefore(dashboard, target);
+        console.log('[MeetGita] Injected cleanly into inline document flow.');
       }
     } catch (err) {
       console.error('[MeetGita] Injection error:', err);
@@ -444,23 +418,19 @@
   }
 
   /* ==========================================================================
-     7. Robust MutationObserver & SPA Lifecycle
+     7. Robust Observer & SPA Lifecycle
      ========================================================================== */
 
-  // Immediate attempt
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', tryInjectDashboard);
   } else {
     tryInjectDashboard();
   }
 
-  // MutationObserver to handle dynamic rendering and React/Wiz component rehydration
   let debounceTimeout = null;
   const observer = new MutationObserver(() => {
     if (debounceTimeout) clearTimeout(debounceTimeout);
-    debounceTimeout = setTimeout(() => {
-      tryInjectDashboard();
-    }, 150);
+    debounceTimeout = setTimeout(tryInjectDashboard, 120);
   });
 
   observer.observe(document.documentElement || document.body, {
@@ -468,18 +438,17 @@
     subtree: true
   });
 
-  // Handle SPA navigation (popstate, pushState, replaceState)
   window.addEventListener('popstate', tryInjectDashboard);
 
-  const originalPushState = history.pushState;
+  const originalPush = history.pushState;
   history.pushState = function () {
-    originalPushState.apply(this, arguments);
+    originalPush.apply(this, arguments);
     setTimeout(tryInjectDashboard, 100);
   };
 
-  const originalReplaceState = history.replaceState;
+  const originalReplace = history.replaceState;
   history.replaceState = function () {
-    originalReplaceState.apply(this, arguments);
+    originalReplace.apply(this, arguments);
     setTimeout(tryInjectDashboard, 100);
   };
 
