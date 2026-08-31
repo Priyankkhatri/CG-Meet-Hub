@@ -1,16 +1,28 @@
 /**
- * MeetGita - Google Meet Class Schedule Dashboard Content Script
- * Uses TreeWalker / XPath text detection to strictly replace the native empty state block.
+ * MeetGita - Google Meet Class Schedule Content Script
+ * 
+ * Architecture & Resilience Strategy:
+ * 1. Text-Content Search via TreeWalker: Google Meet uses minified, dynamic class names (e.g. .VfPpkd-*).
+ *    We never rely on class hashes. Instead, we scan text nodes for "No meetings scheduled for today".
+ * 2. Structural Traversal via closest() / parentElement: Locates the exact semantic wrapper holding
+ *    both the empty-state illustration and text, avoiding disruption of top-level headers or left-side hero actions.
+ * 3. Non-Destructive Hiding: The native container is hidden with `display: none !important` (not removed),
+ *    preventing Meet's internal SPA reconciliation from breaking.
+ * 4. Inline Flow Insertion: Injected as an immediate sibling in the native container's parent, naturally
+ *    participating in Google Meet's existing flex/grid column layout without fixed/absolute popups.
+ * 5. Idempotency & Observer Discipline: Guards against duplicate injections and disconnects the observer
+ *    temporarily during DOM mutations to prevent re-entrant mutation loops.
  */
 
 (function () {
   'use strict';
 
-  if (window.__meetgita_injected) return;
-  window.__meetgita_injected = true;
+  // Prevent multiple script initialization
+  if (window.__meetgita_initialized) return;
+  window.__meetgita_initialized = true;
 
   /* ==========================================================================
-     1. Mock Class Schedule Data
+     1. Class Schedule Data Structure (Phase 1 & Phase 2 Ready)
      ========================================================================== */
   const CLASS_SCHEDULE = [
     {
@@ -20,9 +32,12 @@
       teacherName: 'Prof. Rajesh Sharma',
       department: 'Computer Science & Engineering',
       time: '09:00 AM - 10:30 AM',
-      status: 'live',
+      startTime: '09:00',
+      endTime: '10:30',
+      status: 'live', // 'live' | 'upcoming' | 'completed'
       meetCode: 'dsa-core-live',
-      meetLink: 'https://meet.google.com/dsa-core-live'
+      meetLink: 'https://meet.google.com/dsa-core-live',
+      resourceFolderLink: 'https://drive.google.com'
     },
     {
       id: 'cls-102',
@@ -31,9 +46,12 @@
       teacherName: 'Dr. Ananya Sen',
       department: 'Department of Applied Physics',
       time: '10:45 AM - 12:15 PM',
+      startTime: '10:45',
+      endTime: '12:15',
       status: 'live',
       meetCode: 'phy-wave-opt',
-      meetLink: 'https://meet.google.com/phy-wave-opt'
+      meetLink: 'https://meet.google.com/phy-wave-opt',
+      resourceFolderLink: 'https://drive.google.com'
     },
     {
       id: 'cls-103',
@@ -42,9 +60,12 @@
       teacherName: 'Prof. Vikram Aditya',
       department: 'AI & Data Science',
       time: '02:00 PM - 03:30 PM',
+      startTime: '14:00',
+      endTime: '15:30',
       status: 'upcoming',
       meetCode: 'ml-deep-net',
-      meetLink: 'https://meet.google.com/ml-deep-net'
+      meetLink: 'https://meet.google.com/ml-deep-net',
+      resourceFolderLink: 'https://drive.google.com'
     },
     {
       id: 'cls-104',
@@ -53,14 +74,17 @@
       teacherName: 'Dr. Sneha Patil',
       department: 'Information Technology',
       time: '04:00 PM - 05:30 PM',
+      startTime: '16:00',
+      endTime: '17:30',
       status: 'upcoming',
       meetCode: 'dbms-cld-opt',
-      meetLink: 'https://meet.google.com/dbms-cld-opt'
+      meetLink: 'https://meet.google.com/dbms-cld-opt',
+      resourceFolderLink: 'https://drive.google.com'
     }
   ];
 
   /* ==========================================================================
-     2. SVG Icons (Google Material Design)
+     2. SVG Icons (Material Symbols / Google Style)
      ========================================================================== */
   const ICONS = {
     meetLogo: `<svg viewBox="0 0 24 24"><path d="M19 4H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm-2 10.5V9.5l4-2.5v10l-4-2.5z"/></svg>`,
@@ -72,17 +96,15 @@
   };
 
   /* ==========================================================================
-     3. State Management
+     3. State & Helpers
      ========================================================================== */
   let activeFilter = 'all';
-  let injectionInProgress = false;
-
-  /* ==========================================================================
-     4. Helper Functions
-     ========================================================================== */
+  let observer = null;
+  let isMutatingDOM = false;
 
   function isMeetHomePage() {
     const pathname = window.location.pathname;
+    // Strictly avoid active meeting rooms (meet.google.com/xxx-yyyy-zzz)
     const isMeetingRoom = /\/[a-z]{3}-[a-z]{4}-[a-z]{3}/i.test(pathname);
     if (isMeetingRoom) return false;
 
@@ -159,15 +181,15 @@
   }
 
   /* ==========================================================================
-     5. Foolproof DOM Traversal via TreeWalker & XPath
+     4. TreeWalker-Based Semantic Target Locator
      ========================================================================== */
 
   /**
-   * Search for text node containing 'No meetings scheduled for today' or carousel text
-   * using TreeWalker and traverse up to the wrapper block holding illustration + text.
+   * Scans text nodes for "No meetings scheduled for today" or carousel empty phrases,
+   * then climbs up to the exact container block representing the empty-state visual unit.
    */
-  function findNativeEmptyStateWrapper() {
-    const targetPhrases = [
+  function findNativeEmptyStateContainer() {
+    const searchPhrases = [
       'No meetings scheduled for today',
       'No meetings scheduled',
       'Get a link you can share',
@@ -175,9 +197,11 @@
       'Your meeting is safe'
     ];
 
-    // Method 1: document.createTreeWalker for exact text node detection
+    const root = document.body || document.documentElement;
+    if (!root) return null;
+
     const walker = document.createTreeWalker(
-      document.body || document.documentElement,
+      root,
       NodeFilter.SHOW_TEXT,
       null,
       false
@@ -188,61 +212,127 @@
       const text = (node.nodeValue || '').trim();
       if (!text) continue;
 
-      for (const phrase of targetPhrases) {
+      for (const phrase of searchPhrases) {
         if (text.toLowerCase().includes(phrase.toLowerCase())) {
-          // Found target text node! Traverse upwards to find its main container block
-          let el = node.parentElement;
-          if (!el) continue;
+          let textElem = node.parentElement;
+          if (!textElem) continue;
 
-          // Traverse upwards to find the wrapper block holding illustration and text
-          // Stop at the column container level so we don't hide the whole page
-          let current = el;
-          let wrapper = el;
-          for (let i = 0; i < 8 && current && current !== document.body; i++) {
-            const tag = current.tagName.toLowerCase();
-            // If the element has multiple children (e.g. illustration img/svg + text container + buttons)
-            if (
-              tag === 'div' ||
-              current.getAttribute('role') === 'region' ||
-              current.getAttribute('jscontroller')
-            ) {
-              wrapper = current;
-              // Check if parent is a multi-column flex/grid container
-              const parent = current.parentElement;
-              if (parent && parent.children.length >= 2) {
-                return current;
-              }
+          // Climb upwards from text element to find the container holding the empty state / carousel
+          let current = textElem;
+          let candidate = null;
+
+          // Traverse up to 6 levels to find the bounded card/column container
+          for (let i = 0; i < 6 && current && current !== document.body; i++) {
+            const parent = current.parentElement;
+            if (!parent) break;
+
+            // Stop before reaching body, main, or the full two-column container
+            const isMainGridParent = parent.tagName === 'MAIN' || parent.getAttribute('role') === 'main';
+            const isTwoColumnParent = parent.children.length >= 2 && Array.from(parent.children).some(c => 
+              c !== current && c.querySelector && c.querySelector('button, input')
+            );
+
+            if (isTwoColumnParent || isMainGridParent || current.getAttribute('role') === 'region') {
+              candidate = current;
+              break;
             }
-            current = current.parentElement;
+
+            candidate = current;
+            current = parent;
           }
-          return wrapper;
+
+          if (candidate && candidate !== document.body) {
+            return candidate;
+          }
         }
       }
     }
-
-    // Method 2: XPath fallback
-    try {
-      const xpathQuery = "//*[contains(text(), 'No meetings scheduled') or contains(text(), 'Get a link you can share')]";
-      const result = document.evaluate(xpathQuery, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
-      if (result && result.singleNodeValue) {
-        const found = result.singleNodeValue;
-        let parent = found.closest('div');
-        for (let i = 0; i < 4 && parent && parent.parentElement; i++) {
-          if (parent.parentElement.children.length >= 2) {
-            return parent;
-          }
-          parent = parent.parentElement;
-        }
-        return found.closest('div') || found;
-      }
-    } catch (_) {}
 
     return null;
   }
 
   /* ==========================================================================
-     6. Dashboard DOM Builder (Native Light Material Design)
+     5. Component Rendering (Material Design 3 Card Grid)
      ========================================================================== */
+
+  function renderCard(cls) {
+    const card = document.createElement('div');
+    card.className = `mg-card ${cls.status === 'live' ? 'is-live' : ''}`;
+
+    const statusBadge = cls.status === 'live'
+      ? `<span class="mg-status-badge live"><span class="mg-pulsing-dot"></span> LIVE</span>`
+      : `<span class="mg-status-badge upcoming">Upcoming</span>`;
+
+    card.innerHTML = `
+      <div class="mg-card-top">
+        <div class="mg-tags-group">
+          <span class="mg-subject-code">${cls.code}</span>
+          ${statusBadge}
+        </div>
+        <span class="mg-time-slot">
+          ${ICONS.clock} ${cls.time}
+        </span>
+      </div>
+      <div class="mg-card-content">
+        <h3 class="mg-subject-title" title="${cls.subject}">${cls.subject}</h3>
+        <div class="mg-teacher-row">
+          <div class="mg-avatar">${getInitials(cls.teacherName)}</div>
+          <div class="mg-teacher-info">
+            <span class="mg-teacher-name">${cls.teacherName}</span>
+            <span class="mg-teacher-dept">${cls.department}</span>
+          </div>
+        </div>
+      </div>
+      <div class="mg-card-actions">
+        <span class="mg-link-preview" title="${cls.meetLink}">${cls.meetCode}</span>
+        <div class="mg-action-buttons">
+          <button type="button" class="mg-btn-icon" data-tooltip="Copy meeting link" aria-label="Copy meeting link">
+            ${ICONS.copy}
+          </button>
+          <a href="${cls.meetLink}" class="mg-btn-join" target="_blank" rel="noopener noreferrer">
+            ${ICONS.videoCam} Join Class
+          </a>
+        </div>
+      </div>
+    `;
+
+    const copyBtn = card.querySelector('.mg-btn-icon');
+    copyBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      copyMeetLink(cls.meetLink, copyBtn);
+    });
+
+    return card;
+  }
+
+  function renderCards(dashboard) {
+    const container = dashboard.querySelector('.mg-cards-grid');
+    if (!container) return;
+
+    container.innerHTML = '';
+
+    const filtered = CLASS_SCHEDULE.filter(item => {
+      if (activeFilter === 'live') return item.status === 'live';
+      if (activeFilter === 'upcoming') return item.status === 'upcoming';
+      return true;
+    });
+
+    if (filtered.length === 0) {
+      container.innerHTML = `
+        <div class="mg-empty-state">
+          <div class="mg-empty-icon">${ICONS.calendar}</div>
+          <p class="mg-empty-title">No ${activeFilter} classes scheduled</p>
+          <p class="mg-empty-subtitle">You are all caught up for today.</p>
+        </div>
+      `;
+      return;
+    }
+
+    filtered.forEach(cls => {
+      container.appendChild(renderCard(cls));
+    });
+  }
 
   function createDashboardElement() {
     const dashboard = document.createElement('div');
@@ -303,7 +393,7 @@
 
     dashboard.appendChild(header);
 
-    // Responsive Cards Grid
+    // Responsive Grid
     const cardsGrid = document.createElement('div');
     cardsGrid.className = 'mg-cards-grid';
     dashboard.appendChild(cardsGrid);
@@ -313,149 +403,110 @@
     return dashboard;
   }
 
-  function renderCards(dashboard) {
-    const container = dashboard.querySelector('.mg-cards-grid');
-    if (!container) return;
-
-    container.innerHTML = '';
-
-    const filtered = CLASS_SCHEDULE.filter(item => {
-      if (activeFilter === 'live') return item.status === 'live';
-      if (activeFilter === 'upcoming') return item.status === 'upcoming';
-      return true;
-    });
-
-    if (filtered.length === 0) {
-      container.innerHTML = `
-        <div class="mg-empty-state">
-          <div class="mg-empty-icon">${ICONS.calendar}</div>
-          <p class="mg-empty-title">No ${activeFilter} classes scheduled</p>
-          <p class="mg-empty-subtitle">You are all caught up for today.</p>
-        </div>
-      `;
-      return;
-    }
-
-    filtered.forEach(cls => {
-      const card = document.createElement('div');
-      card.className = `mg-card ${cls.status === 'live' ? 'is-live' : ''}`;
-
-      const statusBadge = cls.status === 'live'
-        ? `<span class="mg-status-badge live"><span class="mg-pulsing-dot"></span> LIVE</span>`
-        : `<span class="mg-status-badge upcoming">Upcoming</span>`;
-
-      card.innerHTML = `
-        <div class="mg-card-top">
-          <div class="mg-tags-group">
-            <span class="mg-subject-code">${cls.code}</span>
-            ${statusBadge}
-          </div>
-          <span class="mg-time-slot">
-            ${ICONS.clock} ${cls.time}
-          </span>
-        </div>
-        <div class="mg-card-content">
-          <h3 class="mg-subject-title" title="${cls.subject}">${cls.subject}</h3>
-          <div class="mg-teacher-row">
-            <div class="mg-avatar">${getInitials(cls.teacherName)}</div>
-            <div class="mg-teacher-info">
-              <span class="mg-teacher-name">${cls.teacherName}</span>
-              <span class="mg-teacher-dept">${cls.department}</span>
-            </div>
-          </div>
-        </div>
-        <div class="mg-card-actions">
-          <span class="mg-link-preview" title="${cls.meetLink}">${cls.meetCode}</span>
-          <div class="mg-action-buttons">
-            <button type="button" class="mg-btn-icon" data-tooltip="Copy meeting link" aria-label="Copy meeting link">
-              ${ICONS.copy}
-            </button>
-            <a href="${cls.meetLink}" class="mg-btn-join" target="_blank" rel="noopener noreferrer">
-              ${ICONS.videoCam} Join Class
-            </a>
-          </div>
-        </div>
-      `;
-
-      const copyBtn = card.querySelector('.mg-btn-icon');
-      copyBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        copyMeetLink(cls.meetLink, copyBtn);
-      });
-
-      container.appendChild(card);
-    });
-  }
-
   /* ==========================================================================
-     7. Precise Injection Routine
+     6. Injection Engine with Idempotency & Observer Discipline
      ========================================================================== */
 
   function tryInjectDashboard() {
+    if (isMutatingDOM) return;
+
     if (!isMeetHomePage()) {
       const existing = document.getElementById('meetgita-dashboard');
       if (existing) existing.remove();
       return;
     }
 
-    const wrapper = findNativeEmptyStateWrapper();
+    const nativeContainer = findNativeEmptyStateContainer();
+    const existingDashboard = document.getElementById('meetgita-dashboard');
 
-    if (wrapper) {
-      // Hide the specific native empty state wrapper
-      wrapper.classList.add('meetgita-hidden-native');
-      wrapper.style.setProperty('display', 'none', 'important');
+    if (nativeContainer) {
+      // Hide native container cleanly without destroying it
+      if (nativeContainer.style.display !== 'none') {
+        nativeContainer.style.setProperty('display', 'none', 'important');
+        nativeContainer.classList.add('meetgita-hidden-native');
+      }
 
-      // Check if dashboard already exists
-      const existing = document.getElementById('meetgita-dashboard');
-      if (!existing && !injectionInProgress && wrapper.parentElement) {
-        injectionInProgress = true;
-        try {
-          const dashboard = createDashboardElement();
-          // Inject exactly inside the parent of the hidden block
-          wrapper.parentElement.insertBefore(dashboard, wrapper);
-          console.log('[MeetGita] Successfully injected into parent of empty state wrapper.');
-        } catch (err) {
-          console.error('[MeetGita] Injection error:', err);
-        } finally {
-          injectionInProgress = false;
-        }
+      // If dashboard is already present in the right parent, we are done
+      if (existingDashboard && existingDashboard.parentElement === nativeContainer.parentElement) {
+        return;
+      }
+    }
+
+    // If dashboard already exists and is attached, don't re-create
+    if (existingDashboard && document.body.contains(existingDashboard)) {
+      return;
+    }
+
+    if (!nativeContainer || !nativeContainer.parentElement) {
+      return;
+    }
+
+    // Perform injection with observer temporarily disconnected to avoid loops
+    isMutatingDOM = true;
+    if (observer) observer.disconnect();
+
+    try {
+      if (existingDashboard) existingDashboard.remove();
+      const dashboard = createDashboardElement();
+      nativeContainer.parentElement.insertBefore(dashboard, nativeContainer);
+      console.log('[MeetGita] Injected class schedule inline into page flow.');
+    } catch (err) {
+      console.error('[MeetGita] Injection error:', err);
+    } finally {
+      isMutatingDOM = false;
+      if (observer) {
+        observer.observe(document.body || document.documentElement, {
+          childList: true,
+          subtree: true
+        });
       }
     }
   }
 
   /* ==========================================================================
-     8. MutationObserver & SPA Lifecycle
+     7. Lifecycle & SPA Route Listeners
      ========================================================================== */
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', tryInjectDashboard);
-  } else {
-    tryInjectDashboard();
+  function setupObserver() {
+    if (observer) observer.disconnect();
+
+    let debounceTimer = null;
+    observer = new MutationObserver(() => {
+      if (isMutatingDOM) return;
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        tryInjectDashboard();
+      }, 100);
+    });
+
+    observer.observe(document.body || document.documentElement, {
+      childList: true,
+      subtree: true
+    });
   }
 
-  let debounceTimeout = null;
-  const observer = new MutationObserver(() => {
-    if (debounceTimeout) clearTimeout(debounceTimeout);
-    debounceTimeout = setTimeout(tryInjectDashboard, 100);
-  });
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      tryInjectDashboard();
+      setupObserver();
+    });
+  } else {
+    tryInjectDashboard();
+    setupObserver();
+  }
 
-  observer.observe(document.documentElement || document.body, {
-    childList: true,
-    subtree: true
-  });
-
+  // SPA navigation handling
   window.addEventListener('popstate', tryInjectDashboard);
 
-  const originalPush = history.pushState;
+  const origPushState = history.pushState;
   history.pushState = function () {
-    originalPush.apply(this, arguments);
+    origPushState.apply(this, arguments);
     setTimeout(tryInjectDashboard, 100);
   };
 
-  const originalReplace = history.replaceState;
+  const origReplaceState = history.replaceState;
   history.replaceState = function () {
-    originalReplace.apply(this, arguments);
+    origReplaceState.apply(this, arguments);
     setTimeout(tryInjectDashboard, 100);
   };
 
