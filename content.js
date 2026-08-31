@@ -2,16 +2,12 @@
  * MeetGita - Google Meet Class Schedule Content Script
  * 
  * Architecture & Resilience Strategy:
- * 1. Text-Content Search via TreeWalker: Google Meet uses minified, dynamic class names (e.g. .VfPpkd-*).
- *    We never rely on class hashes. Instead, we scan text nodes for "No meetings scheduled for today".
- * 2. Structural Traversal via closest() / parentElement: Locates the exact semantic wrapper holding
- *    both the empty-state illustration and text, avoiding disruption of top-level headers or left-side hero actions.
- * 3. Non-Destructive Hiding: The native container is hidden with `display: none !important` (not removed),
- *    preventing Meet's internal SPA reconciliation from breaking.
- * 4. Inline Flow Insertion: Injected as an immediate sibling in the native container's parent, naturally
- *    participating in Google Meet's existing flex/grid column layout without fixed/absolute popups.
- * 5. Idempotency & Observer Discipline: Guards against duplicate injections and disconnects the observer
- *    temporarily during DOM mutations to prevent re-entrant mutation loops.
+ * 1. Single Source of Truth: Uses MEETGITA_CLASSES dataset with extensible schema.
+ * 2. Text-Content Search via TreeWalker: Locates "No meetings scheduled for today" without relying on volatile CSS class names.
+ * 3. Structural Traversal via closest() / parentElement: Locates the exact semantic wrapper holding the empty state.
+ * 4. Non-Destructive Hiding: Applies `display: none !important` to native container (keeps it in DOM for Meet SPA reconciliation).
+ * 5. Inline Flow Insertion: Injected as an immediate sibling in normal document flow.
+ * 6. Idempotency & Observer Discipline: Temporarily disconnects MutationObserver during our own DOM mutations.
  */
 
 (function () {
@@ -22,81 +18,165 @@
   window.__meetgita_initialized = true;
 
   /* ==========================================================================
-     1. Class Schedule Data Structure (Phase 1 & Phase 2 Ready)
+     1. Class Schedule Dataset (Single Source of Truth)
      ========================================================================== */
-  const CLASS_SCHEDULE = [
+  const MEETGITA_CLASSES = [
     {
-      id: 'cls-101',
-      subject: 'Advanced Data Structures & Algorithms',
-      code: 'CS-301',
-      teacherName: 'Prof. Rajesh Sharma',
-      department: 'Computer Science & Engineering',
-      time: '09:00 AM - 10:30 AM',
-      startTime: '09:00',
-      endTime: '10:30',
-      status: 'live', // 'live' | 'upcoming' | 'completed'
-      meetCode: 'dsa-core-live',
-      meetLink: 'https://meet.google.com/dsa-core-live',
-      resourceFolderLink: 'https://drive.google.com'
+      id: "react-1",
+      subjectCode: "CS-301",
+      subject: "React.js Development",
+      teacher: "Rajesh Ranjan Sir",
+      teacherInitials: "RR",
+      department: "Computer Science & Engineering",
+      session: "Before Break",
+      link: "https://meet.google.com/zkb-hdxv-aba",
+      startTime: "09:00 AM",
+      endTime: "10:30 AM",
+      status: "upcoming", // "live" | "upcoming" | "completed"
     },
     {
-      id: 'cls-102',
-      subject: 'Electromagnetic Field Theory & Wave Optics',
-      code: 'PH-204',
-      teacherName: 'Dr. Ananya Sen',
-      department: 'Department of Applied Physics',
-      time: '10:45 AM - 12:15 PM',
-      startTime: '10:45',
-      endTime: '12:15',
-      status: 'live',
-      meetCode: 'phy-wave-opt',
-      meetLink: 'https://meet.google.com/phy-wave-opt',
-      resourceFolderLink: 'https://drive.google.com'
+      id: "react-2",
+      subjectCode: "CS-301",
+      subject: "React.js Development",
+      teacher: "Rajesh Ranjan Sir",
+      teacherInitials: "RR",
+      department: "Computer Science & Engineering",
+      session: "After Break",
+      link: "https://meet.google.com/hwu-yqkb-zyi",
+      startTime: "11:00 AM",
+      endTime: "12:30 PM",
+      status: "upcoming",
     },
     {
-      id: 'cls-103',
-      subject: 'Machine Learning & Neural Architectures',
-      code: 'AI-402',
-      teacherName: 'Prof. Vikram Aditya',
-      department: 'AI & Data Science',
-      time: '02:00 PM - 03:30 PM',
-      startTime: '14:00',
-      endTime: '15:30',
-      status: 'upcoming',
-      meetCode: 'ml-deep-net',
-      meetLink: 'https://meet.google.com/ml-deep-net',
-      resourceFolderLink: 'https://drive.google.com'
+      id: "dbms-1",
+      subjectCode: "CS-205",
+      subject: "Database Management Systems",
+      teacher: "Adil Sir",
+      teacherInitials: "AS",
+      department: "Information Technology",
+      session: "Before Break",
+      link: "https://meet.google.com/mqs-fenu-wkc",
+      startTime: "09:00 AM",
+      endTime: "10:30 AM",
+      status: "upcoming",
     },
     {
-      id: 'cls-104',
-      subject: 'Database Systems & Cloud Optimization',
-      code: 'CS-205',
-      teacherName: 'Dr. Sneha Patil',
-      department: 'Information Technology',
-      time: '04:00 PM - 05:30 PM',
-      startTime: '16:00',
-      endTime: '17:30',
-      status: 'upcoming',
-      meetCode: 'dbms-cld-opt',
-      meetLink: 'https://meet.google.com/dbms-cld-opt',
-      resourceFolderLink: 'https://drive.google.com'
+      id: "dbms-2",
+      subjectCode: "CS-205",
+      subject: "Database Management Systems",
+      teacher: "Adil Sir",
+      teacherInitials: "AS",
+      department: "Information Technology",
+      session: "After Break",
+      link: "https://meet.google.com/mfy-tqua-keb",
+      startTime: "11:00 AM",
+      endTime: "12:30 PM",
+      status: "upcoming",
+    },
+    {
+      id: "nextjs-1",
+      subjectCode: "CS-310",
+      subject: "Next.js Development",
+      teacher: "Next.js Sir",
+      teacherInitials: "NJ",
+      department: "Computer Science & Engineering",
+      session: "Full Session",
+      link: "https://meet.google.com/xhb-ghvy-oys",
+      startTime: "01:00 PM",
+      endTime: "02:30 PM",
+      status: "upcoming",
+    },
+    {
+      id: "dsa-1",
+      subjectCode: "CS-201",
+      subject: "Data Structures & Algorithms",
+      teacher: "Samir Sir",
+      teacherInitials: "SS",
+      department: "Computer Science & Engineering",
+      session: "Full Session",
+      link: "https://meet.google.com/onx-qzxa-sao",
+      startTime: "02:45 PM",
+      endTime: "04:15 PM",
+      status: "upcoming",
+    },
+    {
+      id: "neel-1",
+      subjectCode: "GEN-000",
+      subject: "General Session",
+      teacher: "Neel Sir",
+      teacherInitials: "NS",
+      department: "Computer Science & Engineering",
+      session: "Full Session",
+      link: "https://meet.google.com/baj-jazt-nit",
+      startTime: "04:30 PM",
+      endTime: "05:30 PM",
+      status: "upcoming",
+    },
+    {
+      id: "sumit-1",
+      subjectCode: "GEN-001",
+      subject: "Subject TBD",
+      teacher: "Sumit Sir",
+      teacherInitials: "SM",
+      department: "Computer Science & Engineering",
+      session: "Full Session",
+      link: "https://meet.google.com/uhk-yvok-tqy",
+      startTime: "05:45 PM",
+      endTime: "06:45 PM",
+      status: "upcoming",
+    },
+    {
+      id: "mongodb-1",
+      subjectCode: "CS-220",
+      subject: "MongoDB",
+      teacher: "Yogesh Sir",
+      teacherInitials: "YS",
+      department: "Computer Science & Engineering",
+      session: "Full Session",
+      link: "https://meet.google.com/odt-xfzb-emm",
+      startTime: "07:00 PM",
+      endTime: "08:00 PM",
+      status: "upcoming",
     }
   ];
 
   /* ==========================================================================
-     2. SVG Icons (Material Symbols / Google Style)
+     2. Phase 2 Timetable Helper Functions
+     ========================================================================== */
+  function parseTimeToMinutes(timeStr) {
+    if (!timeStr) return 0;
+    const [time, meridian] = timeStr.split(" ");
+    let [hours, minutes] = time.split(":").map(Number);
+    if (meridian === "PM" && hours !== 12) hours += 12;
+    if (meridian === "AM" && hours === 12) hours = 0;
+    return hours * 60 + minutes;
+  }
+
+  function computeClassStatus(cls, now = new Date()) {
+    if (!cls.startTime || !cls.endTime) return cls.status || "upcoming";
+    const nowMinutes = now.getHours() * 60 + now.getMinutes();
+    const start = parseTimeToMinutes(cls.startTime);
+    const end = parseTimeToMinutes(cls.endTime);
+    if (nowMinutes >= start && nowMinutes <= end) return "live";
+    if (nowMinutes < start) return "upcoming";
+    return "completed";
+  }
+
+  /* ==========================================================================
+     3. SVG Icons (Google Material Symbols / Standard Icons)
      ========================================================================== */
   const ICONS = {
-    meetLogo: `<svg viewBox="0 0 24 24"><path d="M19 4H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm-2 10.5V9.5l4-2.5v10l-4-2.5z"/></svg>`,
+    // Single-color Material Symbols Calendar / Event Icon
+    calendarHeader: `<svg viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20a2 2 0 0 0 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2zM7 12h5v5H7z"/></svg>`,
     videoCam: `<svg viewBox="0 0 24 24"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>`,
     copy: `<svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>`,
     check: `<svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>`,
     clock: `<svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>`,
-    calendar: `<svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19a2 2 0 0 0 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/></svg>`
+    calendarEmpty: `<svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19a2 2 0 0 0 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/></svg>`
   };
 
   /* ==========================================================================
-     3. State & Helpers
+     4. State & Helpers
      ========================================================================== */
   let activeFilter = 'all';
   let observer = null;
@@ -104,7 +184,7 @@
 
   function isMeetHomePage() {
     const pathname = window.location.pathname;
-    // Strictly avoid active meeting rooms (meet.google.com/xxx-yyyy-zzz)
+    // Avoid active video call rooms (meet.google.com/xxx-yyyy-zzz)
     const isMeetingRoom = /\/[a-z]{3}-[a-z]{4}-[a-z]{3}/i.test(pathname);
     if (isMeetingRoom) return false;
 
@@ -119,18 +199,18 @@
     );
   }
 
-  function getFormattedToday() {
-    const now = new Date();
-    return now.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
-  }
-
   function getInitials(name) {
     if (!name) return 'MG';
-    const parts = name.replace(/^(Prof\.|Dr\.|Mr\.|Ms\.|Mrs\.)\s*/i, '').trim().split(/\s+/);
+    const parts = name.replace(/^(Prof\.|Dr\.|Mr\.|Ms\.|Mrs\.)\s*/i, '').replace(/\s+Sir$/i, '').trim().split(/\s+/);
     if (parts.length >= 2) {
       return (parts[0][0] + parts[1][0]).toUpperCase();
     }
     return parts[0].substring(0, 2).toUpperCase();
+  }
+
+  function extractMeetCode(link) {
+    if (!link) return '';
+    return link.replace(/^https?:\/\/meet\.google\.com\//i, '').trim();
   }
 
   function showToast(message) {
@@ -181,13 +261,9 @@
   }
 
   /* ==========================================================================
-     4. TreeWalker-Based Semantic Target Locator
+     5. TreeWalker-Based Semantic Target Locator
      ========================================================================== */
 
-  /**
-   * Scans text nodes for "No meetings scheduled for today" or carousel empty phrases,
-   * then climbs up to the exact container block representing the empty-state visual unit.
-   */
   function findNativeEmptyStateContainer() {
     const searchPhrases = [
       'No meetings scheduled for today',
@@ -217,16 +293,13 @@
           let textElem = node.parentElement;
           if (!textElem) continue;
 
-          // Climb upwards from text element to find the container holding the empty state / carousel
           let current = textElem;
           let candidate = null;
 
-          // Traverse up to 6 levels to find the bounded card/column container
           for (let i = 0; i < 6 && current && current !== document.body; i++) {
             const parent = current.parentElement;
             if (!parent) break;
 
-            // Stop before reaching body, main, or the full two-column container
             const isMainGridParent = parent.tagName === 'MAIN' || parent.getAttribute('role') === 'main';
             const isTwoColumnParent = parent.children.length >= 2 && Array.from(parent.children).some(c => 
               c !== current && c.querySelector && c.querySelector('button, input')
@@ -252,44 +325,58 @@
   }
 
   /* ==========================================================================
-     5. Component Rendering (Material Design 3 Card Grid)
+     6. Card & Dashboard Rendering (Material Design 3 Polish)
      ========================================================================== */
 
   function renderCard(cls) {
     const card = document.createElement('div');
     card.className = `mg-card ${cls.status === 'live' ? 'is-live' : ''}`;
 
+    // Fix 1: Live badge only (no card left-border stripe)
     const statusBadge = cls.status === 'live'
       ? `<span class="mg-status-badge live"><span class="mg-pulsing-dot"></span> LIVE</span>`
-      : `<span class="mg-status-badge upcoming">Upcoming</span>`;
+      : '';
+
+    const sessionBadge = cls.session
+      ? `<span class="mg-session-badge">${cls.session}</span>`
+      : '';
+
+    const meetCode = extractMeetCode(cls.link);
+    const initials = cls.teacherInitials || getInitials(cls.teacher);
+    const timeDisplay = cls.startTime && cls.endTime ? `${cls.startTime} - ${cls.endTime}` : (cls.startTime || '');
 
     card.innerHTML = `
       <div class="mg-card-top">
         <div class="mg-tags-group">
-          <span class="mg-subject-code">${cls.code}</span>
+          <span class="mg-subject-code">${cls.subjectCode || 'CLASS'}</span>
+          ${sessionBadge}
           ${statusBadge}
         </div>
-        <span class="mg-time-slot">
-          ${ICONS.clock} ${cls.time}
-        </span>
+        ${timeDisplay ? `
+          <span class="mg-time-slot">
+            ${ICONS.clock} ${timeDisplay}
+          </span>
+        ` : ''}
       </div>
       <div class="mg-card-content">
         <h3 class="mg-subject-title" title="${cls.subject}">${cls.subject}</h3>
         <div class="mg-teacher-row">
-          <div class="mg-avatar">${getInitials(cls.teacherName)}</div>
+          <div class="mg-avatar">${initials}</div>
           <div class="mg-teacher-info">
-            <span class="mg-teacher-name">${cls.teacherName}</span>
-            <span class="mg-teacher-dept">${cls.department}</span>
+            <span class="mg-teacher-name">${cls.teacher}</span>
+            <span class="mg-teacher-dept">${cls.department || 'CodingGita'}</span>
           </div>
         </div>
       </div>
       <div class="mg-card-actions">
-        <span class="mg-link-preview" title="${cls.meetLink}">${cls.meetCode}</span>
+        <span class="mg-link-preview" title="${cls.link}">meet.google.com/${meetCode}</span>
         <div class="mg-action-buttons">
+          <!-- Fix 4: Borderless icon button with gray circular hover -->
           <button type="button" class="mg-btn-icon" data-tooltip="Copy meeting link" aria-label="Copy meeting link">
             ${ICONS.copy}
           </button>
-          <a href="${cls.meetLink}" class="mg-btn-join" target="_blank" rel="noopener noreferrer">
+          <!-- Fix 2: Primary filled Material pill button -->
+          <a href="${cls.link}" class="mg-btn-join" target="_blank" rel="noopener noreferrer">
             ${ICONS.videoCam} Join Class
           </a>
         </div>
@@ -300,7 +387,7 @@
     copyBtn.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
-      copyMeetLink(cls.meetLink, copyBtn);
+      copyMeetLink(cls.link, copyBtn);
     });
 
     return card;
@@ -312,7 +399,7 @@
 
     container.innerHTML = '';
 
-    const filtered = CLASS_SCHEDULE.filter(item => {
+    const filtered = MEETGITA_CLASSES.filter(item => {
       if (activeFilter === 'live') return item.status === 'live';
       if (activeFilter === 'upcoming') return item.status === 'upcoming';
       return true;
@@ -321,7 +408,7 @@
     if (filtered.length === 0) {
       container.innerHTML = `
         <div class="mg-empty-state">
-          <div class="mg-empty-icon">${ICONS.calendar}</div>
+          <div class="mg-empty-icon">${ICONS.calendarEmpty}</div>
           <p class="mg-empty-title">No ${activeFilter} classes scheduled</p>
           <p class="mg-empty-subtitle">You are all caught up for today.</p>
         </div>
@@ -338,22 +425,19 @@
     const dashboard = document.createElement('div');
     dashboard.id = 'meetgita-dashboard';
 
-    const liveCount = CLASS_SCHEDULE.filter(c => c.status === 'live').length;
-    const upcomingCount = CLASS_SCHEDULE.filter(c => c.status === 'upcoming').length;
+    const liveCount = MEETGITA_CLASSES.filter(c => c.status === 'live').length;
+    const upcomingCount = MEETGITA_CLASSES.filter(c => c.status === 'upcoming').length;
 
-    // Header
+    // Header (Fix 5: Removed duplicate date text; Fix 6: Single-color Material icon)
     const header = document.createElement('div');
     header.className = 'mg-header';
     header.innerHTML = `
       <div class="mg-header-top">
         <div class="mg-header-left">
           <div class="mg-logo-icon" title="MeetGita">
-            ${ICONS.meetLogo}
+            ${ICONS.calendarHeader}
           </div>
-          <div class="mg-title-group">
-            <span class="mg-subtitle">${getFormattedToday()}</span>
-            <h2 class="mg-title">Class Schedule</h2>
-          </div>
+          <h2 class="mg-title">Class Schedule</h2>
         </div>
         <div class="mg-header-right">
           ${
@@ -366,9 +450,10 @@
           }
         </div>
       </div>
+      <!-- Fix 8: Refined filter chip states -->
       <div class="mg-filters">
         <button type="button" class="mg-filter-chip ${activeFilter === 'all' ? 'active' : ''}" data-filter="all">
-          All Classes <span class="mg-chip-count">${CLASS_SCHEDULE.length}</span>
+          All Classes <span class="mg-chip-count">${MEETGITA_CLASSES.length}</span>
         </button>
         <button type="button" class="mg-filter-chip ${activeFilter === 'live' ? 'active' : ''}" data-filter="live">
           Live Now <span class="mg-chip-count">${liveCount}</span>
@@ -393,7 +478,7 @@
 
     dashboard.appendChild(header);
 
-    // Responsive Grid
+    // Cards Grid (Fix 7: Max 2 columns)
     const cardsGrid = document.createElement('div');
     cardsGrid.className = 'mg-cards-grid';
     dashboard.appendChild(cardsGrid);
@@ -404,7 +489,7 @@
   }
 
   /* ==========================================================================
-     6. Injection Engine with Idempotency & Observer Discipline
+     7. Injection Engine
      ========================================================================== */
 
   function tryInjectDashboard() {
@@ -420,19 +505,16 @@
     const existingDashboard = document.getElementById('meetgita-dashboard');
 
     if (nativeContainer) {
-      // Hide native container cleanly without destroying it
       if (nativeContainer.style.display !== 'none') {
         nativeContainer.style.setProperty('display', 'none', 'important');
         nativeContainer.classList.add('meetgita-hidden-native');
       }
 
-      // If dashboard is already present in the right parent, we are done
       if (existingDashboard && existingDashboard.parentElement === nativeContainer.parentElement) {
         return;
       }
     }
 
-    // If dashboard already exists and is attached, don't re-create
     if (existingDashboard && document.body.contains(existingDashboard)) {
       return;
     }
@@ -441,7 +523,6 @@
       return;
     }
 
-    // Perform injection with observer temporarily disconnected to avoid loops
     isMutatingDOM = true;
     if (observer) observer.disconnect();
 
@@ -464,7 +545,7 @@
   }
 
   /* ==========================================================================
-     7. Lifecycle & SPA Route Listeners
+     8. Lifecycle & SPA Route Listeners
      ========================================================================== */
 
   function setupObserver() {
@@ -495,7 +576,6 @@
     setupObserver();
   }
 
-  // SPA navigation handling
   window.addEventListener('popstate', tryInjectDashboard);
 
   const origPushState = history.pushState;
