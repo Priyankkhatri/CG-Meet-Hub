@@ -1,8 +1,8 @@
 /**
- * MeetGita - Google Meet Class Schedule Content Script
+ * CG Meet Hub - Google Meet Class Schedule Content Script
  * 
  * Architecture & Resilience Strategy:
- * 1. Single Source of Truth: Uses MEETGITA_CLASSES dataset with extensible schema.
+ * 1. Single Source of Truth: Uses CG_MEET_HUB_CLASSES dataset with extensible schema.
  * 2. TreeWalker Text-Content Search: Scans for "No meetings scheduled for today" or carousel empty states
  *    without relying on obfuscated CSS class names.
  * 3. Fresh Lookup on Every Cycle: Re-evaluates container lookup dynamically on mutations, tab-switches (visibilitychange),
@@ -19,13 +19,13 @@
   'use strict';
 
   // Prevent multiple script initialization
-  if (window.__meetgita_initialized) return;
-  window.__meetgita_initialized = true;
+  if (window.__cgmeethub_initialized) return;
+  window.__cgmeethub_initialized = true;
 
   /* ==========================================================================
      1. Class Schedule Dataset (Single Source of Truth)
      ========================================================================== */
-  const MEETGITA_CLASSES = [
+  const CG_MEET_HUB_CLASSES = [
     {
       id: "react-1",
       subjectCode: "CS-301",
@@ -199,7 +199,7 @@
       injectionTimestamps.shift();
     }
     if (injectionTimestamps.length >= MAX_INJECTIONS_COUNT) {
-      console.warn('[MeetGita] Repeated re-injection detected — possible render loop in progress');
+      console.warn('[CG Meet Hub] Repeated re-injection detected — possible render loop in progress');
       return false;
     }
     return true;
@@ -226,17 +226,16 @@
    * Checks whether our dashboard node is attached, live, and visible in document flow.
    */
   function isDashboardHealthy() {
-    const dashboard = document.getElementById('meetgita-dashboard');
+    const dashboard = document.getElementById('cgmeethub-dashboard') || document.getElementById('meetgita-dashboard');
     if (!dashboard) return false;
     if (!document.body.contains(dashboard)) return false;
     if (dashboard.parentElement === null) return false;
-    // Ensure dashboard has not been hidden by external styles
     if (dashboard.style.display === 'none') return false;
     return true;
   }
 
   function getInitials(name) {
-    if (!name) return 'MG';
+    if (!name) return 'CG';
     const parts = name.replace(/^(Prof\.|Dr\.|Mr\.|Ms\.|Mrs\.)\s*/i, '').replace(/\s+Sir$/i, '').trim().split(/\s+/);
     if (parts.length >= 2) {
       return (parts[0][0] + parts[1][0]).toUpperCase();
@@ -292,7 +291,7 @@
         buttonElement.setAttribute('data-tooltip', 'Copy meeting link');
       }, 2000);
     } catch (err) {
-      console.error('[MeetGita] Error copying link:', err);
+      console.error('[CG Meet Hub] Error copying link:', err);
     }
   }
 
@@ -432,7 +431,7 @@
 
     container.innerHTML = '';
 
-    const filtered = MEETGITA_CLASSES.filter(item => {
+    const filtered = CG_MEET_HUB_CLASSES.filter(item => {
       if (activeFilter === 'live') return item.status === 'live';
       if (activeFilter === 'upcoming') return item.status === 'upcoming';
       return true;
@@ -456,17 +455,17 @@
 
   function createDashboardElement() {
     const dashboard = document.createElement('div');
-    dashboard.id = 'meetgita-dashboard';
+    dashboard.id = 'cgmeethub-dashboard';
 
-    const liveCount = MEETGITA_CLASSES.filter(c => c.status === 'live').length;
-    const upcomingCount = MEETGITA_CLASSES.filter(c => c.status === 'upcoming').length;
+    const liveCount = CG_MEET_HUB_CLASSES.filter(c => c.status === 'live').length;
+    const upcomingCount = CG_MEET_HUB_CLASSES.filter(c => c.status === 'upcoming').length;
 
     const header = document.createElement('div');
     header.className = 'mg-header';
     header.innerHTML = `
       <div class="mg-header-top">
         <div class="mg-header-left">
-          <div class="mg-logo-icon" title="MeetGita">
+          <div class="mg-logo-icon" title="CG Meet Hub">
             ${ICONS.calendarHeader}
           </div>
           <h2 class="mg-title">Class Schedule</h2>
@@ -484,7 +483,7 @@
       </div>
       <div class="mg-filters">
         <button type="button" class="mg-filter-chip ${activeFilter === 'all' ? 'active' : ''}" data-filter="all">
-          All Classes <span class="mg-chip-count">${MEETGITA_CLASSES.length}</span>
+          All Classes <span class="mg-chip-count">${CG_MEET_HUB_CLASSES.length}</span>
         </button>
         <button type="button" class="mg-filter-chip ${activeFilter === 'live' ? 'active' : ''}" data-filter="live">
           Live Now <span class="mg-chip-count">${liveCount}</span>
@@ -526,18 +525,19 @@
     if (isInjecting) return;
 
     if (!isMeetHomePage()) {
-      const existing = document.getElementById('meetgita-dashboard');
+      const existing = document.getElementById('cgmeethub-dashboard') || document.getElementById('meetgita-dashboard');
       if (existing) existing.remove();
       return;
     }
 
     const nativeContainer = findNativeEmptyStateContainer();
-    const existingDashboard = document.getElementById('meetgita-dashboard');
+    const existingDashboard = document.getElementById('cgmeethub-dashboard') || document.getElementById('meetgita-dashboard');
 
     // 1. If native container is present, ensure it is hidden
     if (nativeContainer) {
       if (nativeContainer.style.display !== 'none') {
         nativeContainer.style.setProperty('display', 'none', 'important');
+        nativeContainer.classList.add('cgmeethub-hidden-native');
         nativeContainer.classList.add('meetgita-hidden-native');
       }
 
@@ -577,9 +577,9 @@
 
       const dashboard = createDashboardElement();
       nativeContainer.parentElement.insertBefore(dashboard, nativeContainer);
-      console.log('[MeetGita] Verified & injected class schedule inline into page flow.');
+      console.log('[CG Meet Hub] Verified & injected class schedule inline into page flow.');
     } catch (err) {
-      console.error('[MeetGita] Injection error:', err);
+      console.error('[CG Meet Hub] Injection error:', err);
     } finally {
       // Allow next mutation batch after DOM write completes
       setTimeout(() => {
@@ -606,7 +606,6 @@
       }, 80);
     });
 
-    // Observe documentElement/body persistently for full page lifetime
     observer.observe(document.body || document.documentElement, {
       childList: true,
       subtree: true

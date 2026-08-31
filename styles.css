@@ -1,7 +1,8 @@
-/* MeetGita - Google Material Design 3 Stylesheet for Google Meet */
+/* CG Meet Hub - Google Material Design 3 Stylesheet for Google Meet */
 @import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&family=Google+Sans+Text:wght@400;500;700&family=Roboto:wght@400;500;700&display=swap');
 
 /* Strictly hide native empty-state container */
+.cgmeethub-hidden-native,
 .meetgita-hidden-native {
   display: none !important;
   visibility: hidden !important;
@@ -10,6 +11,7 @@
 /* ==========================================================================
    Embedded Dashboard Container (In-flow block element)
    ========================================================================== */
+#cgmeethub-dashboard,
 #meetgita-dashboard {
   all: initial; /* Scoped reset against external inherited styles */
   font-family: 'Google Sans', 'Google Sans Text', Roboto, -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
@@ -26,13 +28,14 @@
   color: #202124 !important;
 }
 
+#cgmeethub-dashboard *,
 #meetgita-dashboard * {
   box-sizing: border-box;
   font-family: inherit;
 }
 
 /* ==========================================================================
-   Header Section (Fix 5: Clean title without redundant date line)
+   Header Section (Clean title without redundant date line)
    ========================================================================== */
 .mg-header {
   display: flex;
@@ -57,7 +60,7 @@
   gap: 10px;
 }
 
-/* Fix 6: Single-color Material Symbols icon (Google Blue) */
+/* Single-color Material Symbols icon (Google Blue) */
 .mg-logo-icon {
   width: 32px;
   height: 32px;
@@ -121,7 +124,7 @@
 }
 
 /* ==========================================================================
-   Filter Tabs (Fix 8: Refined Material 3 filter chip affordance)
+   Filter Tabs (Material 3 filter chip affordance)
    ========================================================================== */
 .mg-filters {
   display: flex;
@@ -176,7 +179,7 @@
 }
 
 /* ==========================================================================
-   Responsive Grid (Fix 7: Max 2 columns on desktop, 1 on mobile)
+   Responsive Grid (Max 2 columns on desktop, 1 on mobile)
    ========================================================================== */
 .mg-cards-grid {
   display: grid;
@@ -193,7 +196,7 @@
 }
 
 /* ==========================================================================
-   Class Card (Fix 3: 12px border radius; Fix 1: No left-border stripe)
+   Class Card (12px border radius, No left-border stripe)
    ========================================================================== */
 .mg-card {
   background: #ffffff;
@@ -380,7 +383,7 @@
   gap: 6px;
 }
 
-/* Fix 2: Primary filled Material pill button (border-radius: 9999px) */
+/* Primary "Join Class" Google Pill Button */
 .mg-btn-join {
   display: inline-flex;
   align-items: center;
@@ -417,7 +420,7 @@
   fill: #ffffff;
 }
 
-/* Fix 4: Borderless icon button with gray circular hover state */
+/* Borderless Icon Button with Gray Circular Hover */
 .mg-btn-icon {
   display: inline-flex;
   align-items: center;

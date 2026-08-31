@@ -1,6 +1,6 @@
-# MeetGita - Google Meet Class Schedule Chrome Extension
+# CG Meet Hub - Google Meet Class Schedule Chrome Extension
 
-**MeetGita** is a Manifest V3 Chrome Extension that injects a native Google Material Design 3 class schedule dashboard directly into the Google Meet homepage (`https://meet.google.com/`), seamlessly replacing the empty state carousel with an interactive class timetable.
+**CG Meet Hub** is a Manifest V3 Chrome Extension that injects a native Google Material Design 3 class schedule dashboard directly into the Google Meet homepage (`https://meet.google.com/`), seamlessly replacing the empty state carousel with an interactive class timetable.
 
 ---
 
@@ -12,7 +12,7 @@
   - 🎥 **Join Class**: Primary Google Blue pill button launching the meeting link directly.
   - 📋 **Copy Link**: Secondary icon button with clipboard copy and animated Google-style feedback toast.
 - **Filter Tabs**: Filter by "All Classes", "Live Now", and "Upcoming".
-- **Robust DOM Injection**: MutationObserver automatically detects Google Meet layout updates, SPA route transitions, and gracefully ignores active meeting rooms (`/xxx-yyyy-zzz`).
+- **Robust DOM Injection**: Persistent TreeWalker MutationObserver automatically detects Google Meet layout updates, SPA route transitions, tab switches, and gracefully ignores active meeting rooms (`/xxx-yyyy-zzz`).
 
 ---
 
@@ -24,4 +24,4 @@
 4. Click **Load unpacked** in the top-left corner.
 5. Select this project directory (`d:\Migrated_Desktop_Projects\CG-Meet-Hub`).
 6. Navigate to [https://meet.google.com/](https://meet.google.com/) or [https://meet.google.com/home](https://meet.google.com/home).
-7. The **MeetGita** class schedule dashboard will instantly replace the default empty state illustration!
+7. The **CG Meet Hub** class schedule dashboard will instantly replace the default empty state illustration!
