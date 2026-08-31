@@ -1,6 +1,6 @@
 /**
  * MeetGita - Google Meet Class Schedule Dashboard Content Script
- * Seamlessly replaces the native empty state container in the normal DOM flow.
+ * Uses TreeWalker / XPath text detection to strictly replace the native empty state block.
  */
 
 (function () {
@@ -20,7 +20,7 @@
       teacherName: 'Prof. Rajesh Sharma',
       department: 'Computer Science & Engineering',
       time: '09:00 AM - 10:30 AM',
-      status: 'live', // 'live' | 'upcoming'
+      status: 'live',
       meetCode: 'dsa-core-live',
       meetLink: 'https://meet.google.com/dsa-core-live'
     },
@@ -123,7 +123,7 @@
 
     setTimeout(() => {
       toast.classList.remove('visible');
-    }, 2400);
+    }, 2200);
   }
 
   async function copyMeetLink(link, buttonElement) {
@@ -159,7 +159,89 @@
   }
 
   /* ==========================================================================
-     5. Dashboard DOM Builder (Inline Flow)
+     5. Foolproof DOM Traversal via TreeWalker & XPath
+     ========================================================================== */
+
+  /**
+   * Search for text node containing 'No meetings scheduled for today' or carousel text
+   * using TreeWalker and traverse up to the wrapper block holding illustration + text.
+   */
+  function findNativeEmptyStateWrapper() {
+    const targetPhrases = [
+      'No meetings scheduled for today',
+      'No meetings scheduled',
+      'Get a link you can share',
+      'Plan ahead',
+      'Your meeting is safe'
+    ];
+
+    // Method 1: document.createTreeWalker for exact text node detection
+    const walker = document.createTreeWalker(
+      document.body || document.documentElement,
+      NodeFilter.SHOW_TEXT,
+      null,
+      false
+    );
+
+    let node;
+    while ((node = walker.nextNode())) {
+      const text = (node.nodeValue || '').trim();
+      if (!text) continue;
+
+      for (const phrase of targetPhrases) {
+        if (text.toLowerCase().includes(phrase.toLowerCase())) {
+          // Found target text node! Traverse upwards to find its main container block
+          let el = node.parentElement;
+          if (!el) continue;
+
+          // Traverse upwards to find the wrapper block holding illustration and text
+          // Stop at the column container level so we don't hide the whole page
+          let current = el;
+          let wrapper = el;
+          for (let i = 0; i < 8 && current && current !== document.body; i++) {
+            const tag = current.tagName.toLowerCase();
+            // If the element has multiple children (e.g. illustration img/svg + text container + buttons)
+            if (
+              tag === 'div' ||
+              current.getAttribute('role') === 'region' ||
+              current.getAttribute('jscontroller')
+            ) {
+              wrapper = current;
+              // Check if parent is a multi-column flex/grid container
+              const parent = current.parentElement;
+              if (parent && parent.children.length >= 2) {
+                return current;
+              }
+            }
+            current = current.parentElement;
+          }
+          return wrapper;
+        }
+      }
+    }
+
+    // Method 2: XPath fallback
+    try {
+      const xpathQuery = "//*[contains(text(), 'No meetings scheduled') or contains(text(), 'Get a link you can share')]";
+      const result = document.evaluate(xpathQuery, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
+      if (result && result.singleNodeValue) {
+        const found = result.singleNodeValue;
+        let parent = found.closest('div');
+        for (let i = 0; i < 4 && parent && parent.parentElement; i++) {
+          if (parent.parentElement.children.length >= 2) {
+            return parent;
+          }
+          parent = parent.parentElement;
+        }
+        return found.closest('div') || found;
+      }
+    } catch (_) {}
+
+    return null;
+  }
+
+  /* ==========================================================================
+     6. Dashboard DOM Builder (Native Light Material Design)
      ========================================================================== */
 
   function createDashboardElement() {
@@ -221,10 +303,10 @@
 
     dashboard.appendChild(header);
 
-    // 2-Column Cards Grid Container
-    const cardsContainer = document.createElement('div');
-    cardsContainer.className = 'mg-cards-grid';
-    dashboard.appendChild(cardsContainer);
+    // Responsive Cards Grid
+    const cardsGrid = document.createElement('div');
+    cardsGrid.className = 'mg-cards-grid';
+    dashboard.appendChild(cardsGrid);
 
     renderCards(dashboard);
 
@@ -307,77 +389,9 @@
   }
 
   /* ==========================================================================
-     6. Strict DOM Replacement & Inline Injection
+     7. Precise Injection Routine
      ========================================================================== */
 
-  /**
-   * Locate the specific container holding the empty state / illustration
-   */
-  function findNativeEmptyStateContainer() {
-    // 1. Check for elements with explicit empty state text
-    const textNodes = document.querySelectorAll('h2, h3, div, span, p');
-    for (const el of textNodes) {
-      const text = (el.textContent || '').trim();
-      if (
-        text.includes('No meetings scheduled for today') ||
-        text.includes('No meetings scheduled') ||
-        text.includes('Get a link you can share') ||
-        text.includes('Plan ahead') ||
-        text.includes('Your meeting is safe')
-      ) {
-        // Traverse up to find the top container card of this right column section
-        let parent = el.parentElement;
-        for (let i = 0; i < 6 && parent; i++) {
-          if (
-            parent.getAttribute('role') === 'region' ||
-            parent.classList.contains('g3VIeb') ||
-            (parent.tagName === 'DIV' && parent.parentElement && parent.parentElement.children.length >= 2)
-          ) {
-            return parent;
-          }
-          parent = parent.parentElement;
-        }
-        return el.closest('div[role="region"]') || el.parentElement;
-      }
-    }
-
-    // 2. Check for carousel/region selectors
-    const carouselCandidates = [
-      'div[role="region"][aria-label*="carousel" i]',
-      'div[role="region"]',
-      'div[data-carousel-item]',
-      'c-wiz div[jscontroller] > div:has(img[src*="googleusercontent"])',
-      'div:has(> div > img[src*="googleusercontent"])',
-      'div:has(> button[aria-label*="Next slide" i])'
-    ];
-
-    for (const sel of carouselCandidates) {
-      try {
-        const el = document.querySelector(sel);
-        if (el && el.offsetParent !== null) {
-          return el;
-        }
-      } catch (_) {}
-    }
-
-    // 3. Fallback: Right-side column sibling in the landing layout
-    const mainCols = document.querySelectorAll('c-wiz, main, div[role="main"], div[jscontroller]');
-    for (const container of mainCols) {
-      const directChildren = Array.from(container.children).filter(c => c.tagName === 'DIV');
-      if (directChildren.length >= 2) {
-        const hasMeetingControls = directChildren[0].querySelector('button, input[placeholder*="code" i], input[aria-label*="code" i]');
-        if (hasMeetingControls && directChildren[1]) {
-          return directChildren[1];
-        }
-      }
-    }
-
-    return null;
-  }
-
-  /**
-   * Main Inline Injection Routine
-   */
   function tryInjectDashboard() {
     if (!isMeetHomePage()) {
       const existing = document.getElementById('meetgita-dashboard');
@@ -385,40 +399,33 @@
       return;
     }
 
-    // If dashboard already exists in document, ensure native remains hidden
-    const existingDashboard = document.getElementById('meetgita-dashboard');
-    const target = findNativeEmptyStateContainer();
+    const wrapper = findNativeEmptyStateWrapper();
 
-    if (target) {
-      // Strictly hide native container with display: none !important
-      target.classList.add('meetgita-hidden-native');
-      target.style.setProperty('display', 'none', 'important');
-    }
+    if (wrapper) {
+      // Hide the specific native empty state wrapper
+      wrapper.classList.add('meetgita-hidden-native');
+      wrapper.style.setProperty('display', 'none', 'important');
 
-    if (existingDashboard) {
-      return; // Already present in DOM flow
-    }
-
-    if (injectionInProgress) return;
-    injectionInProgress = true;
-
-    try {
-      if (target && target.parentElement) {
-        const dashboard = createDashboardElement();
-
-        // Inject cleanly into natural DOM flow right before the hidden native container
-        target.parentElement.insertBefore(dashboard, target);
-        console.log('[MeetGita] Injected cleanly into inline document flow.');
+      // Check if dashboard already exists
+      const existing = document.getElementById('meetgita-dashboard');
+      if (!existing && !injectionInProgress && wrapper.parentElement) {
+        injectionInProgress = true;
+        try {
+          const dashboard = createDashboardElement();
+          // Inject exactly inside the parent of the hidden block
+          wrapper.parentElement.insertBefore(dashboard, wrapper);
+          console.log('[MeetGita] Successfully injected into parent of empty state wrapper.');
+        } catch (err) {
+          console.error('[MeetGita] Injection error:', err);
+        } finally {
+          injectionInProgress = false;
+        }
       }
-    } catch (err) {
-      console.error('[MeetGita] Injection error:', err);
-    } finally {
-      injectionInProgress = false;
     }
   }
 
   /* ==========================================================================
-     7. Robust Observer & SPA Lifecycle
+     8. MutationObserver & SPA Lifecycle
      ========================================================================== */
 
   if (document.readyState === 'loading') {
@@ -430,7 +437,7 @@
   let debounceTimeout = null;
   const observer = new MutationObserver(() => {
     if (debounceTimeout) clearTimeout(debounceTimeout);
-    debounceTimeout = setTimeout(tryInjectDashboard, 120);
+    debounceTimeout = setTimeout(tryInjectDashboard, 100);
   });
 
   observer.observe(document.documentElement || document.body, {
