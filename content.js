@@ -3,11 +3,16 @@
  * 
  * Architecture & Resilience Strategy:
  * 1. Single Source of Truth: Uses MEETGITA_CLASSES dataset with extensible schema.
- * 2. Text-Content Search via TreeWalker: Locates "No meetings scheduled for today" without relying on volatile CSS class names.
- * 3. Structural Traversal via closest() / parentElement: Locates the exact semantic wrapper holding the empty state.
- * 4. Non-Destructive Hiding: Applies `display: none !important` to native container (keeps it in DOM for Meet SPA reconciliation).
- * 5. Inline Flow Insertion: Injected as an immediate sibling in normal document flow.
- * 6. Idempotency & Observer Discipline: Temporarily disconnects MutationObserver during our own DOM mutations.
+ * 2. TreeWalker Text-Content Search: Scans for "No meetings scheduled for today" or carousel empty states
+ *    without relying on obfuscated CSS class names.
+ * 3. Fresh Lookup on Every Cycle: Re-evaluates container lookup dynamically on mutations, tab-switches (visibilitychange),
+ *    and window focus events to counter Google Meet's internal SPA re-renders and polling.
+ * 4. Liveness & Health Check (isDashboardHealthy): Verifies attached DOM presence and layout validity rather
+ *    than relying on a naive ID-only existence check.
+ * 5. Non-Destructive Hiding: Applies `display: none !important` to the native container so Google Meet's SPA reconciliation
+ *    remains intact.
+ * 6. Loop Throttling & Observer Discipline: Uses debounce, an `isInjecting` mutex flag, and rolling-window injection
+ *    rate-limiting with console warning diagnostics.
  */
 
 (function () {
@@ -163,10 +168,9 @@
   }
 
   /* ==========================================================================
-     3. SVG Icons (Google Material Symbols / Standard Icons)
+     3. SVG Icons (Material Symbols / Google Style)
      ========================================================================== */
   const ICONS = {
-    // Single-color Material Symbols Calendar / Event Icon
     calendarHeader: `<svg viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20a2 2 0 0 0 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2zM7 12h5v5H7z"/></svg>`,
     videoCam: `<svg viewBox="0 0 24 24"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>`,
     copy: `<svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>`,
@@ -176,11 +180,30 @@
   };
 
   /* ==========================================================================
-     4. State & Helpers
+     4. State & Throttling
      ========================================================================== */
   let activeFilter = 'all';
   let observer = null;
-  let isMutatingDOM = false;
+  let isInjecting = false;
+  
+  // Rate-limiting diagnostics to avoid render loops
+  const injectionTimestamps = [];
+  const MAX_INJECTIONS_WINDOW_MS = 4000;
+  const MAX_INJECTIONS_COUNT = 8;
+
+  function recordInjectionAttempt() {
+    const now = Date.now();
+    injectionTimestamps.push(now);
+    // Prune timestamps older than window
+    while (injectionTimestamps.length > 0 && injectionTimestamps[0] < now - MAX_INJECTIONS_WINDOW_MS) {
+      injectionTimestamps.shift();
+    }
+    if (injectionTimestamps.length >= MAX_INJECTIONS_COUNT) {
+      console.warn('[MeetGita] Repeated re-injection detected — possible render loop in progress');
+      return false;
+    }
+    return true;
+  }
 
   function isMeetHomePage() {
     const pathname = window.location.pathname;
@@ -197,6 +220,19 @@
       pathname.includes('/landing') ||
       pathname === '/_meet'
     );
+  }
+
+  /**
+   * Checks whether our dashboard node is attached, live, and visible in document flow.
+   */
+  function isDashboardHealthy() {
+    const dashboard = document.getElementById('meetgita-dashboard');
+    if (!dashboard) return false;
+    if (!document.body.contains(dashboard)) return false;
+    if (dashboard.parentElement === null) return false;
+    // Ensure dashboard has not been hidden by external styles
+    if (dashboard.style.display === 'none') return false;
+    return true;
   }
 
   function getInitials(name) {
@@ -261,7 +297,7 @@
   }
 
   /* ==========================================================================
-     5. TreeWalker-Based Semantic Target Locator
+     5. TreeWalker-Based Semantic Target Locator (Always run fresh)
      ========================================================================== */
 
   function findNativeEmptyStateContainer() {
@@ -325,14 +361,13 @@
   }
 
   /* ==========================================================================
-     6. Card & Dashboard Rendering (Material Design 3 Polish)
+     6. Card & Dashboard Rendering
      ========================================================================== */
 
   function renderCard(cls) {
     const card = document.createElement('div');
     card.className = `mg-card ${cls.status === 'live' ? 'is-live' : ''}`;
 
-    // Fix 1: Live badge only (no card left-border stripe)
     const statusBadge = cls.status === 'live'
       ? `<span class="mg-status-badge live"><span class="mg-pulsing-dot"></span> LIVE</span>`
       : '';
@@ -371,11 +406,9 @@
       <div class="mg-card-actions">
         <span class="mg-link-preview" title="${cls.link}">meet.google.com/${meetCode}</span>
         <div class="mg-action-buttons">
-          <!-- Fix 4: Borderless icon button with gray circular hover -->
           <button type="button" class="mg-btn-icon" data-tooltip="Copy meeting link" aria-label="Copy meeting link">
             ${ICONS.copy}
           </button>
-          <!-- Fix 2: Primary filled Material pill button -->
           <a href="${cls.link}" class="mg-btn-join" target="_blank" rel="noopener noreferrer">
             ${ICONS.videoCam} Join Class
           </a>
@@ -428,7 +461,6 @@
     const liveCount = MEETGITA_CLASSES.filter(c => c.status === 'live').length;
     const upcomingCount = MEETGITA_CLASSES.filter(c => c.status === 'upcoming').length;
 
-    // Header (Fix 5: Removed duplicate date text; Fix 6: Single-color Material icon)
     const header = document.createElement('div');
     header.className = 'mg-header';
     header.innerHTML = `
@@ -450,7 +482,6 @@
           }
         </div>
       </div>
-      <!-- Fix 8: Refined filter chip states -->
       <div class="mg-filters">
         <button type="button" class="mg-filter-chip ${activeFilter === 'all' ? 'active' : ''}" data-filter="all">
           All Classes <span class="mg-chip-count">${MEETGITA_CLASSES.length}</span>
@@ -478,7 +509,6 @@
 
     dashboard.appendChild(header);
 
-    // Cards Grid (Fix 7: Max 2 columns)
     const cardsGrid = document.createElement('div');
     cardsGrid.className = 'mg-cards-grid';
     dashboard.appendChild(cardsGrid);
@@ -489,11 +519,11 @@
   }
 
   /* ==========================================================================
-     7. Injection Engine
+     7. Robust Injection & Self-Healing Engine
      ========================================================================== */
 
   function tryInjectDashboard() {
-    if (isMutatingDOM) return;
+    if (isInjecting) return;
 
     if (!isMeetHomePage()) {
       const existing = document.getElementById('meetgita-dashboard');
@@ -504,90 +534,120 @@
     const nativeContainer = findNativeEmptyStateContainer();
     const existingDashboard = document.getElementById('meetgita-dashboard');
 
+    // 1. If native container is present, ensure it is hidden
     if (nativeContainer) {
       if (nativeContainer.style.display !== 'none') {
         nativeContainer.style.setProperty('display', 'none', 'important');
         nativeContainer.classList.add('meetgita-hidden-native');
       }
 
-      if (existingDashboard && existingDashboard.parentElement === nativeContainer.parentElement) {
+      // 2. Check if existing dashboard is already healthy and positioned directly before nativeContainer
+      if (
+        isDashboardHealthy() &&
+        existingDashboard &&
+        existingDashboard.parentElement === nativeContainer.parentElement &&
+        existingDashboard.nextElementSibling === nativeContainer
+      ) {
+        return; // Fully healthy and accurately placed
+      }
+    } else {
+      // Native container not found; if dashboard is healthy and in DOM, let it stay
+      if (isDashboardHealthy()) {
         return;
       }
     }
 
-    if (existingDashboard && document.body.contains(existingDashboard)) {
-      return;
-    }
-
+    // If native container is missing or has no parent yet, we cannot inject safely
     if (!nativeContainer || !nativeContainer.parentElement) {
       return;
     }
 
-    isMutatingDOM = true;
-    if (observer) observer.disconnect();
+    // Rate-limiting sanity check
+    if (!recordInjectionAttempt()) {
+      return;
+    }
+
+    // Perform the injection/re-injection
+    isInjecting = true;
 
     try {
-      if (existingDashboard) existingDashboard.remove();
+      if (existingDashboard) {
+        existingDashboard.remove();
+      }
+
       const dashboard = createDashboardElement();
       nativeContainer.parentElement.insertBefore(dashboard, nativeContainer);
-      console.log('[MeetGita] Injected class schedule inline into page flow.');
+      console.log('[MeetGita] Verified & injected class schedule inline into page flow.');
     } catch (err) {
       console.error('[MeetGita] Injection error:', err);
     } finally {
-      isMutatingDOM = false;
-      if (observer) {
-        observer.observe(document.body || document.documentElement, {
-          childList: true,
-          subtree: true
-        });
-      }
+      // Allow next mutation batch after DOM write completes
+      setTimeout(() => {
+        isInjecting = false;
+      }, 50);
     }
   }
 
   /* ==========================================================================
-     8. Lifecycle & SPA Route Listeners
+     8. Persistent Lifecycle & Observer Listeners (Never Disconnected Permanently)
      ========================================================================== */
 
-  function setupObserver() {
-    if (observer) observer.disconnect();
+  function setupPersistentObserver() {
+    if (observer) {
+      observer.disconnect();
+    }
 
     let debounceTimer = null;
     observer = new MutationObserver(() => {
-      if (isMutatingDOM) return;
+      if (isInjecting) return;
       if (debounceTimer) clearTimeout(debounceTimer);
       debounceTimer = setTimeout(() => {
         tryInjectDashboard();
-      }, 100);
+      }, 80);
     });
 
+    // Observe documentElement/body persistently for full page lifetime
     observer.observe(document.body || document.documentElement, {
       childList: true,
       subtree: true
     });
   }
 
+  // Initial Boot
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
       tryInjectDashboard();
-      setupObserver();
+      setupPersistentObserver();
     });
   } else {
     tryInjectDashboard();
-    setupObserver();
+    setupPersistentObserver();
   }
 
+  // React to tab switching & window focus immediately
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+      tryInjectDashboard();
+    }
+  });
+
+  window.addEventListener('focus', () => {
+    tryInjectDashboard();
+  });
+
+  // SPA navigation handling
   window.addEventListener('popstate', tryInjectDashboard);
 
   const origPushState = history.pushState;
   history.pushState = function () {
     origPushState.apply(this, arguments);
-    setTimeout(tryInjectDashboard, 100);
+    setTimeout(tryInjectDashboard, 80);
   };
 
   const origReplaceState = history.replaceState;
   history.replaceState = function () {
     origReplaceState.apply(this, arguments);
-    setTimeout(tryInjectDashboard, 100);
+    setTimeout(tryInjectDashboard, 80);
   };
 
 })();
