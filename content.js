@@ -194,7 +194,24 @@
   }
 
   const ICONS = {
-    calendarHeader: `<svg viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20a2 2 0 0 0 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2zM7 12h5v5H7z"/></svg>`,
+    codingGitaLogo: `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="50" cy="18" r="1.6" fill="#f8b721"/>
+      <rect x="17" y="14" width="66" height="49" rx="4.5" stroke="#f8b721" stroke-width="4.5"/>
+      <path d="M9 66h82c1.5 0 2.5 1 2.5 2.2v0.6c0 1.2-1 2.2-2.5 2.2H9c-1.5 0-2.5-1-2.5-2.2v-0.6C6.5 67 7.5 66 9 66z" fill="#f8b721"/>
+      <path d="M29 30.5v25.5c2.5-2 5.2-3.4 8.5-4v-25.5c-3.3 0.6-6 2-8.5 4z" fill="#f8b721"/>
+      <path d="M48 26.5c-6.8-2.8-13.8-2.2-19 1.5v28c5.2-3.7 12.2-4.3 19-1.5v-28z" fill="#f8b721"/>
+      <path d="M52 26.5c6.8-2.8 13.8-2.2 19 1.5v28c-5.2-3.7-12.2-4.3-19-1.5v-28z" fill="#f8b721"/>
+      <path d="M71 30.5v25.5c-2.5-2-5.2-3.4-8.5-4v-25.5c3.3 0.6 6 2 8.5 4z" fill="#f8b721"/>
+    </svg>`,
+    codingGitaWatermark: `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="50" cy="18" r="1.6" fill="#581273"/>
+      <rect x="17" y="14" width="66" height="49" rx="4.5" stroke="#581273" stroke-width="4.5"/>
+      <path d="M9 66h82c1.5 0 2.5 1 2.5 2.2v0.6c0 1.2-1 2.2-2.5 2.2H9c-1.5 0-2.5-1-2.5-2.2v-0.6C6.5 67 7.5 66 9 66z" fill="#581273"/>
+      <path d="M29 30.5v25.5c2.5-2 5.2-3.4 8.5-4v-25.5c-3.3 0.6-6 2-8.5 4z" fill="#581273"/>
+      <path d="M48 26.5c-6.8-2.8-13.8-2.2-19 1.5v28c5.2-3.7 12.2-4.3 19-1.5v-28z" fill="#581273"/>
+      <path d="M52 26.5c6.8-2.8 13.8-2.2 19 1.5v28c-5.2-3.7-12.2-4.3-19-1.5v-28z" fill="#581273"/>
+      <path d="M71 30.5v25.5c-2.5-2-5.2-3.4-8.5-4v-25.5c3.3 0.6 6 2 8.5 4z" fill="#581273"/>
+    </svg>`,
     videoCam: `<svg viewBox="0 0 24 24"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>`,
     copy: `<svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>`,
     check: `<svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>`,
@@ -472,6 +489,13 @@
     const dashboard = document.createElement('div');
     dashboard.id = 'cgmeethub-dashboard';
 
+    // Faint subtle CodingGita brand watermark
+    const watermark = document.createElement('div');
+    watermark.className = 'mg-watermark';
+    watermark.setAttribute('aria-hidden', 'true');
+    watermark.innerHTML = ICONS.codingGitaWatermark;
+    dashboard.appendChild(watermark);
+
     const liveCount = CG_MEET_HUB_CLASSES.filter(c => c.sessions && c.sessions.some(s => s.status === 'live')).length;
     const upcomingCount = CG_MEET_HUB_CLASSES.filter(c => c.sessions && c.sessions.some(s => s.status === 'upcoming')).length;
 
@@ -480,10 +504,10 @@
     header.innerHTML = `
       <div class="mg-header-top">
         <div class="mg-header-left">
-          <div class="mg-logo-icon" title="CG Meet Hub">
-            ${ICONS.calendarHeader}
+          <div class="mg-logo-icon" title="CodingGita">
+            ${ICONS.codingGitaLogo}
           </div>
-          <h2 class="mg-title">Class Schedule</h2>
+          <h2 class="mg-title">CG Meet Hub</h2>
         </div>
         <div class="mg-header-right">
           ${

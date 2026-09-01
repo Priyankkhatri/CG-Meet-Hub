@@ -17,7 +17,8 @@
   font-family: 'Google Sans', 'Google Sans Text', Roboto, -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
   display: flex !important;
   flex-direction: column !important;
-  position: static !important; /* Strictly in normal document flow */
+  position: relative !important; /* Context for subtle watermark */
+  overflow: hidden !important;
   width: 100% !important;
   max-width: 900px !important;
   margin: 0 auto !important;
@@ -34,6 +35,25 @@
   font-family: inherit;
 }
 
+/* Faint Subtle CodingGita Brand Watermark */
+.mg-watermark {
+  position: absolute;
+  right: -25px;
+  bottom: -30px;
+  width: 250px;
+  height: 250px;
+  opacity: 0.04; /* 4% opacity: subtle, barely-there signature */
+  pointer-events: none;
+  z-index: 0;
+  user-select: none;
+}
+
+.mg-watermark svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
 /* ==========================================================================
    Header Section (Clean title with live counter & filter chips)
    ========================================================================== */
@@ -44,6 +64,8 @@
   border-bottom: 1px solid #e8eaed;
   padding-bottom: 14px;
   width: 100%;
+  position: relative;
+  z-index: 1;
 }
 
 .mg-header-top {
@@ -60,29 +82,27 @@
   gap: 10px;
 }
 
-/* Single-color Material Symbols icon (Google Blue) */
+/* CodingGita Logo Mark (Yellow Laptop + Open Book Glyph Lockup) */
 .mg-logo-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  background-color: #e8f0fe;
-  color: #0b57d0;
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  background: transparent !important;
 }
 
 .mg-logo-icon svg {
-  width: 20px;
-  height: 20px;
-  fill: currentColor;
+  width: 28px;
+  height: 28px;
+  display: block;
 }
 
 .mg-title {
   font-family: 'Google Sans', sans-serif;
   font-size: 20px;
-  font-weight: 500;
+  font-weight: 600;
   color: #202124;
   line-height: 1.25;
   margin: 0;
@@ -188,6 +208,8 @@
   box-sizing: border-box;
   width: 100%;
   align-items: stretch;
+  position: relative;
+  z-index: 1;
 }
 
 @media (max-width: 680px) {
