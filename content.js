@@ -17,6 +17,26 @@
   if (window.__cgmeethub_initialized) return;
   window.__cgmeethub_initialized = true;
 
+  // Trusted Types Policy for Google Meet DOM compatibility
+  let ttPolicy;
+  try {
+    if (window.trustedTypes && window.trustedTypes.createPolicy) {
+      ttPolicy = window.trustedTypes.getPolicy && window.trustedTypes.getPolicy('cgmeethub_policy')
+        ? window.trustedTypes.getPolicy('cgmeethub_policy')
+        : window.trustedTypes.createPolicy('cgmeethub_policy', { createHTML: s => s });
+    }
+  } catch (e) {
+    ttPolicy = { createHTML: s => s };
+  }
+
+  function setHTML(el, htmlString) {
+    if (ttPolicy && ttPolicy.createHTML) {
+      el.innerHTML = ttPolicy.createHTML(htmlString);
+    } else {
+      el.innerHTML = htmlString;
+    }
+  }
+
   /* ==========================================================================
      1. Class Schedule Dataset (Grouped by Teacher & Subject)
      ========================================================================== */
@@ -158,18 +178,18 @@
   const MEETGITA_CLASSES = CG_MEET_HUB_CLASSES;
 
   /* ==========================================================================
-     2. Per-Teacher Material Palette Configuration
+     2. Per-Teacher Palette Configuration
      ========================================================================== */
   const TEACHER_THEMES = {
-    "RR": { primary: "#2563eb", bg: "#eff6ff", accent: "#3b82f6", rgb: "37, 99, 235", gradient: "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)" }, // React.js - Modern Electric Blue
-    "AS": { primary: "#059669", bg: "#ecfdf5", accent: "#10b981", rgb: "5, 150, 105", gradient: "linear-gradient(135deg, #10b981 0%, #047857 100%)" }, // DBMS - Emerald Green
-    "NJ": { primary: "#7c3aed", bg: "#f5f3ff", accent: "#8b5cf6", rgb: "124, 58, 237", gradient: "linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)" }, // Next.js - Vivid Violet
-    "SS": { primary: "#d97706", bg: "#fffbeb", accent: "#f59e0b", rgb: "217, 119, 6", gradient: "linear-gradient(135deg, #f59e0b 0%, #b45309 100%)" }, // DSA - Amber Flame
-    "NS": { primary: "#0891b2", bg: "#ecfeff", accent: "#06b6d4", rgb: "8, 145, 178", gradient: "linear-gradient(135deg, #06b6d4 0%, #0e7490 100%)" }, // General - Cyan Teal
-    "SM": { primary: "#e11d48", bg: "#fff1f2", accent: "#f43f5e", rgb: "225, 29, 72", gradient: "linear-gradient(135deg, #f43f5e 0%, #be123c 100%)" }, // Subject TBD - Rose Ruby
-    "YS": { primary: "#15803d", bg: "#f0fdf4", accent: "#22c55e", rgb: "21, 128, 61", gradient: "linear-gradient(135deg, #22c55e 0%, #166534 100%)" }, // MongoDB - Vibrant Forest
+    "RR": { primary: "#2563eb", bg: "rgba(37, 99, 235, 0.08)", accent: "#3b82f6", rgb: "37, 99, 235" }, // React.js
+    "AS": { primary: "#059669", bg: "rgba(5, 150, 105, 0.08)", accent: "#10b981", rgb: "5, 150, 105" }, // DBMS
+    "NJ": { primary: "#7c3aed", bg: "rgba(124, 58, 237, 0.08)", accent: "#8b5cf6", rgb: "124, 58, 237" }, // Next.js
+    "SS": { primary: "#d97706", bg: "rgba(217, 119, 6, 0.08)", accent: "#f59e0b", rgb: "217, 119, 6" }, // DSA
+    "NS": { primary: "#0891b2", bg: "rgba(8, 145, 178, 0.08)", accent: "#06b6d4", rgb: "8, 145, 178" }, // General
+    "SM": { primary: "#e11d48", bg: "rgba(225, 29, 72, 0.08)", accent: "#f43f5e", rgb: "225, 29, 72" }, // Subject TBD
+    "YS": { primary: "#15803d", bg: "rgba(21, 128, 61, 0.08)", accent: "#22c55e", rgb: "21, 128, 61" }, // MongoDB
   };
-  const DEFAULT_THEME = { primary: "#2563eb", bg: "#eff6ff", accent: "#3b82f6", rgb: "37, 99, 235", gradient: "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)" };
+  const DEFAULT_THEME = { primary: "#2563eb", bg: "rgba(37, 99, 235, 0.08)", accent: "#3b82f6", rgb: "37, 99, 235" };
 
   /* ==========================================================================
      3. Helper Functions & SVG Icons
@@ -272,7 +292,7 @@
       toast.className = 'mg-toast';
       document.body.appendChild(toast);
     }
-    toast.innerHTML = `${ICONS.check} <span>${message}</span>`;
+    setHTML(toast, `${ICONS.check} <span>${message}</span>`);
     toast.classList.add('visible');
 
     setTimeout(() => {
@@ -297,14 +317,14 @@
       }
 
       buttonElement.classList.add('copied');
-      buttonElement.innerHTML = ICONS.check;
+      setHTML(buttonElement, ICONS.check);
       buttonElement.setAttribute('data-tooltip', 'Link Copied!');
 
       showToast(`Class link copied to clipboard`);
 
       setTimeout(() => {
         buttonElement.classList.remove('copied');
-        buttonElement.innerHTML = ICONS.copy;
+        setHTML(buttonElement, ICONS.copy);
         buttonElement.setAttribute('data-tooltip', 'Copy meeting link');
       }, 2000);
     } catch (err) {
@@ -316,9 +336,6 @@
      5. Stable Container Locator
      ========================================================================== */
 
-  /**
-   * Discovers the agenda empty state container (.cadSnb / .VBauye) and its stable parent (div.u88fae).
-   */
   function findNativeContainers() {
     const marked = document.querySelector('[data-cgmeethub-native-hidden="true"]');
     if (marked && document.body.contains(marked) && marked.parentElement) {
@@ -394,7 +411,7 @@
     card.style.setProperty('--teacher-rgb', theme.rgb);
     card.style.setProperty('--teacher-bg', theme.bg);
 
-    // Interactive Liquid Glass cursor spotlight reflection (inspired by archisvaze/liquid-glass)
+    // Interactive Liquid Glass cursor spotlight reflection
     const glare = document.createElement('div');
     glare.className = 'mg-card-glare';
     card.appendChild(glare);
@@ -424,7 +441,7 @@
       card.style.removeProperty('--mouse-y');
     });
 
-    // Build session rows dynamically and generically
+    // Build session rows dynamically
     const sessionRowsHtml = (cls.sessions || []).map((session, idx) => {
       const meetCode = extractMeetCode(session.link);
       const isLive = session.status === 'live';
@@ -455,7 +472,9 @@
       `;
     }).join('');
 
-    card.innerHTML += `
+    const cardContent = document.createElement('div');
+    cardContent.style.display = 'contents';
+    setHTML(cardContent, `
       <div class="mg-card-header">
         <div class="mg-card-header-left">
           <div class="mg-avatar">
@@ -477,7 +496,8 @@
       <div class="mg-sessions-list">
         ${sessionRowsHtml}
       </div>
-    `;
+    `);
+    card.appendChild(cardContent);
 
     // Bind copy link buttons
     card.querySelectorAll('.mg-btn-icon').forEach(btn => {
@@ -496,7 +516,7 @@
     const container = dashboard.querySelector('.mg-cards-grid');
     if (!container) return;
 
-    container.innerHTML = '';
+    setHTML(container, '');
 
     const filtered = CG_MEET_HUB_CLASSES.filter(item => {
       if (activeFilter === 'live') return item.sessions && item.sessions.some(s => s.status === 'live');
@@ -505,13 +525,14 @@
     });
 
     if (filtered.length === 0) {
-      container.innerHTML = `
-        <div class="mg-empty-state">
-          <div class="mg-empty-icon">${ICONS.calendarEmpty}</div>
-          <p class="mg-empty-title">No ${activeFilter} classes scheduled</p>
-          <p class="mg-empty-subtitle">You are all caught up for today.</p>
-        </div>
-      `;
+      const empty = document.createElement('div');
+      empty.className = 'mg-empty-state';
+      setHTML(empty, `
+        <div class="mg-empty-icon">${ICONS.calendarEmpty}</div>
+        <p class="mg-empty-title">No ${activeFilter} classes scheduled</p>
+        <p class="mg-empty-subtitle">You are all caught up for today.</p>
+      `);
+      container.appendChild(empty);
       return;
     }
 
@@ -533,19 +554,27 @@
       dashboard.style.setProperty('--dash-mouse-y', `${y}px`);
     });
 
-    // Centered CodingGita watermark background visible behind cards
-    const watermark = document.createElement('div');
-    watermark.className = 'mg-watermark';
-    watermark.setAttribute('aria-hidden', 'true');
-    watermark.innerHTML = ICONS.codingGitaWatermark;
-    dashboard.appendChild(watermark);
+    // Side Ambient Auras (Left & Right) + Side Watermark
+    const auraLeft = document.createElement('div');
+    auraLeft.className = 'mg-side-aura mg-aura-left';
+    dashboard.appendChild(auraLeft);
+
+    const auraRight = document.createElement('div');
+    auraRight.className = 'mg-side-aura mg-aura-right';
+    dashboard.appendChild(auraRight);
+
+    const sideWatermark = document.createElement('div');
+    sideWatermark.className = 'mg-side-watermark';
+    sideWatermark.setAttribute('aria-hidden', 'true');
+    setHTML(sideWatermark, ICONS.codingGitaWatermark);
+    dashboard.appendChild(sideWatermark);
 
     const liveCount = CG_MEET_HUB_CLASSES.filter(c => c.sessions && c.sessions.some(s => s.status === 'live')).length;
     const upcomingCount = CG_MEET_HUB_CLASSES.filter(c => c.sessions && c.sessions.some(s => s.status === 'upcoming')).length;
 
     const header = document.createElement('div');
     header.className = 'mg-header';
-    header.innerHTML = `
+    setHTML(header, `
       <div class="mg-header-top">
         <div class="mg-header-left">
           <div class="mg-brand-badge">
@@ -594,7 +623,7 @@
           </button>
         </div>
       </div>
-    `;
+    `);
 
     header.querySelectorAll('.mg-filter-chip').forEach(btn => {
       btn.addEventListener('click', (e) => {
