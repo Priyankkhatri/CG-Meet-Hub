@@ -1,7 +1,8 @@
 /* ==========================================================================
-   CG Meet Hub - Clean & Unified Light Theme Stylesheet for Google Meet
+   CG Meet Hub - iOS Liquid Glass Stylesheet with CodingGita Purple Aurora
+   Inspired by archisvaze/liquid-glass
    ========================================================================== */
-@import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&family=Google+Sans+Text:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Roboto+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&family=Google+Sans+Text:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Roboto+Mono:wght@400;500;600&display=swap');
 
 /* Strictly hide native empty-state container */
 .cgmeethub-hidden-native,
@@ -11,7 +12,7 @@
 }
 
 /* ==========================================================================
-   Embedded Dashboard Container
+   Dashboard Canvas Container with CodingGita Aurora Mesh
    ========================================================================== */
 #cgmeethub-dashboard,
 #meetgita-dashboard {
@@ -21,13 +22,20 @@
   flex-direction: column !important;
   position: relative !important;
   width: 100% !important;
-  max-width: 940px !important;
-  margin: 0 auto !important;
-  padding: 12px 0 24px 0 !important;
-  background: transparent !important;
+  max-width: 980px !important;
+  margin: 12px auto 24px auto !important;
+  padding: 24px 26px 30px 26px !important;
+  border-radius: 24px !important;
+  background: linear-gradient(135deg, #180829 0%, #2a0845 45%, #150524 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  box-shadow:
+    0 24px 60px -10px rgba(18, 2, 33, 0.65),
+    0 4px 16px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
   box-sizing: border-box !important;
-  gap: 18px !important;
-  color: #0f172a !important;
+  gap: 22px !important;
+  color: #ffffff !important;
+  overflow: hidden !important;
 }
 
 #cgmeethub-dashboard *,
@@ -36,17 +44,75 @@
   font-family: inherit;
 }
 
-/* Subtle Centered Background Watermark */
+/* Ambient Cosmic Glow Mesh Orbs (Diffusing Behind Liquid Glass) */
+.mg-bg-mesh {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+  border-radius: 24px;
+}
+
+.mg-mesh-orb {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  transform: translate3d(0, 0, 0);
+  will-change: transform;
+}
+
+.mg-mesh-orb-1 {
+  top: -60px;
+  left: -40px;
+  width: 420px;
+  height: 420px;
+  background: radial-gradient(circle, #7c3aed 0%, rgba(124, 58, 237, 0) 70%);
+  filter: blur(75px);
+  opacity: 0.60;
+}
+
+.mg-mesh-orb-2 {
+  top: 35%;
+  right: -80px;
+  width: 440px;
+  height: 440px;
+  background: radial-gradient(circle, #f59e0b 0%, rgba(245, 158, 11, 0) 70%);
+  filter: blur(85px);
+  opacity: 0.38;
+}
+
+.mg-mesh-orb-3 {
+  bottom: -60px;
+  left: 20%;
+  width: 420px;
+  height: 420px;
+  background: radial-gradient(circle, #db2777 0%, rgba(219, 39, 119, 0) 70%);
+  filter: blur(80px);
+  opacity: 0.42;
+}
+
+.mg-mesh-orb-4 {
+  bottom: 25%;
+  right: 25%;
+  width: 360px;
+  height: 360px;
+  background: radial-gradient(circle, #2563eb 0%, rgba(37, 99, 235, 0) 70%);
+  filter: blur(75px);
+  opacity: 0.35;
+}
+
+/* Subtle Centered Watermark in Background */
 .mg-watermark {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: min(700px, 92%);
-  max-width: 700px;
+  width: min(720px, 94%);
+  max-width: 720px;
   height: auto;
   aspect-ratio: 1 / 1;
-  opacity: 0.05; /* 5% opacity: clean, subtle background branding */
+  opacity: 0.08; /* Soft golden/white glow through liquid glass */
   pointer-events: none;
   z-index: 0;
   user-select: none;
@@ -58,15 +124,20 @@
   display: block;
 }
 
+.mg-watermark svg * {
+  stroke: #ffffff !important;
+  fill: #ffffff !important;
+}
+
 /* ==========================================================================
-   Header Section
+   Header Section (Liquid Glass Aesthetic)
    ========================================================================== */
 .mg-header {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  border-bottom: 1px solid #e8eaed;
-  padding-bottom: 16px;
+  gap: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+  padding-bottom: 18px;
   width: 100%;
   position: relative;
   z-index: 1;
@@ -83,26 +154,35 @@
 .mg-header-left {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
 }
 
-/* CodingGita Logo Emblem */
+/* CodingGita Brand Emblem Badge */
 .mg-brand-badge {
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
-  background: #ffffff;
-  border: 1px solid #e8eaed;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.28);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.55);
   flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.mg-brand-badge:hover {
+  transform: scale(1.06) rotate(2deg);
 }
 
 .mg-logo-icon {
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -127,95 +207,110 @@
 }
 
 .mg-title {
-  font-family: 'Google Sans', sans-serif;
-  font-size: 20px;
-  font-weight: 600;
-  color: #202124;
-  line-height: 1.25;
+  font-family: 'Plus Jakarta Sans', 'Google Sans', sans-serif;
+  font-size: 21px;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.2;
   margin: 0;
-  letter-spacing: -0.2px;
+  letter-spacing: -0.4px;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
 }
 
 .mg-brand-tag {
   font-size: 11px;
-  font-weight: 600;
-  color: #5f6368;
-  background: #f1f3f4;
+  font-weight: 700;
+  color: #fde047;
+  background: rgba(245, 158, 11, 0.22);
+  border: 1px solid rgba(245, 158, 11, 0.45);
   padding: 2px 7px;
-  border-radius: 4px;
-  letter-spacing: 0.2px;
+  border-radius: 6px;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  backdrop-filter: blur(10px);
 }
 
 .mg-subtitle {
-  font-size: 12px;
-  font-weight: 400;
-  color: #5f6368;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.72);
   line-height: 1.3;
 }
 
 .mg-header-right {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .mg-live-counter {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 11px;
+  gap: 7px;
+  padding: 5px 13px;
   border-radius: 9999px;
-  background: #fce8e6;
-  color: #c5221f;
+  background: rgba(225, 29, 72, 0.25);
+  border: 1px solid rgba(244, 63, 94, 0.5);
+  color: #fda4af;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.2px;
+  backdrop-filter: blur(16px);
+  box-shadow: 0 2px 10px rgba(225, 29, 72, 0.25);
 }
 
 .mg-pulsing-dot {
-  width: 7px;
-  height: 7px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  background-color: #d93025;
-  box-shadow: 0 0 0 0 rgba(217, 48, 37, 0.7);
+  background-color: #f43f5e;
+  box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.7);
   animation: mgPulse 1.8s infinite cubic-bezier(0.66, 0, 0, 1);
 }
 
 @keyframes mgPulse {
-  0% { box-shadow: 0 0 0 0 rgba(217, 48, 37, 0.7); }
-  70% { box-shadow: 0 0 0 8px rgba(217, 48, 37, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(217, 48, 37, 0); }
+  0% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.7); }
+  70% { box-shadow: 0 0 0 8px rgba(244, 63, 94, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0); }
 }
 
 .mg-ready-badge {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 11px;
+  gap: 7px;
+  padding: 5px 13px;
   border-radius: 9999px;
-  background: #f1f3f4;
-  color: #5f6368;
+  background: rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: rgba(255, 255, 255, 0.85);
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 600;
+  backdrop-filter: blur(16px);
 }
 
 .mg-ready-dot {
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
-  background-color: #1e8e3e;
+  background-color: #34d399;
 }
 
-/* Filter Chips */
+/* Liquid Glass Filter Pills */
 .mg-filters-wrapper {
   display: flex;
   align-items: center;
 }
 
 .mg-filters {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
+  background: rgba(0, 0, 0, 0.25);
+  padding: 4px;
+  border-radius: 14px;
+  gap: 5px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   overflow-x: auto;
   scrollbar-width: none;
 }
@@ -226,16 +321,16 @@
 
 .mg-filter-chip {
   appearance: none;
-  border: 1px solid #dadce0;
-  background-color: #ffffff;
-  color: #5f6368;
-  font-family: 'Google Sans', Roboto, sans-serif;
+  border: 1px solid transparent;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.75);
+  font-family: 'Google Sans', sans-serif;
   font-size: 13px;
   font-weight: 500;
-  padding: 5px 12px;
-  border-radius: 8px;
+  padding: 6px 14px;
+  border-radius: 10px;
   cursor: pointer;
-  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
   white-space: nowrap;
   display: inline-flex;
   align-items: center;
@@ -243,32 +338,40 @@
 }
 
 .mg-filter-chip:hover {
-  background-color: #f8f9fa;
-  border-color: #bdc1c6;
-  color: #202124;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.10);
 }
 
 .mg-filter-chip.active {
-  background-color: #e8f0fe;
-  border-color: #d2e3fc;
-  color: #0b57d0;
+  background: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.40);
+  color: #ffffff;
   font-weight: 600;
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
 .mg-filter-live-dot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background-color: #d93025;
+  background-color: #f43f5e;
 }
 
 .mg-chip-count {
   font-size: 11px;
-  font-weight: 600;
-  opacity: 0.85;
-  background: rgba(0, 0, 0, 0.06);
-  padding: 1px 6px;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+  padding: 1px 7px;
   border-radius: 9999px;
+  transition: all 0.18s ease;
+}
+
+.mg-filter-chip.active .mg-chip-count {
+  background: #ffffff;
+  color: #1e082c;
 }
 
 /* ==========================================================================
@@ -277,7 +380,7 @@
 .mg-cards-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
+  gap: 18px;
   box-sizing: border-box;
   width: 100%;
   align-items: stretch;
@@ -285,34 +388,60 @@
   z-index: 1;
 }
 
-@media (max-width: 700px) {
+@media (max-width: 720px) {
   .mg-cards-grid {
     grid-template-columns: 1fr;
   }
 }
 
 /* ==========================================================================
-   Unified Clean Class Card
+   iOS Liquid Glass Class Card (Pure CSS Refractive Glass)
    ========================================================================== */
 .mg-card {
-  background: #ffffff;
-  border: 1px solid #dadce0;
-  border-radius: 12px;
-  padding: 16px;
+  background: rgba(255, 255, 255, 0.09);
+  backdrop-filter: blur(28px) saturate(190%) contrast(105%);
+  -webkit-backdrop-filter: blur(28px) saturate(190%) contrast(105%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-top: 1.5px solid rgba(255, 255, 255, 0.50);
+  border-left: 1px solid rgba(255, 255, 255, 0.30);
+  border-radius: 20px;
+  padding: 18px 20px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 14px;
-  box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
-  transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.2s cubic-bezier(0.2, 0, 0, 1), border-color 0.2s ease;
+  gap: 16px;
+  box-shadow:
+    0 16px 40px 0 rgba(0, 0, 0, 0.32),
+    0 2px 6px 0 rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.55),
+    inset 0 0 20px 0 rgba(255, 255, 255, 0.05);
+  transition:
+    transform 0.24s cubic-bezier(0.16, 1, 0.3, 1),
+    background 0.24s ease,
+    border-color 0.24s ease,
+    box-shadow 0.24s cubic-bezier(0.16, 1, 0.3, 1);
   box-sizing: border-box;
   position: relative;
+  overflow: hidden;
 }
 
 .mg-card:hover {
-  transform: translateY(-2px);
-  border-color: #bdc1c6;
-  box-shadow: 0 4px 14px rgba(60, 64, 67, 0.18);
+  transform: translateY(-4px) scale(1.008);
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.35);
+  border-top-color: rgba(255, 255, 255, 0.70);
+  box-shadow:
+    0 24px 50px 0 rgba(0, 0, 0, 0.45),
+    0 4px 12px 0 rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.75),
+    inset 0 0 25px 0 rgba(255, 255, 255, 0.10);
+}
+
+/* Fallback for non-supporting browsers */
+@supports not (backdrop-filter: blur(1px)) {
+  .mg-card {
+    background: rgba(30, 10, 48, 0.88);
+  }
 }
 
 /* Card Header */
@@ -320,7 +449,7 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 10px;
+  gap: 12px;
 }
 
 .mg-card-header-left {
@@ -331,25 +460,31 @@
   flex: 1;
 }
 
-/* Unified Neutral Avatar Squircle */
+/* Frosted Glass Avatar Squircle */
 .mg-avatar {
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
-  background: #f1f3f4;
-  color: #3c4043;
-  border: 1px solid #e8eaed;
-  font-size: 13px;
+  width: 42px;
+  height: 42px;
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  color: #ffffff;
+  font-size: 14px;
   font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
   flex-shrink: 0;
-  transition: transform 0.15s ease;
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  letter-spacing: 0.5px;
 }
 
 .mg-card:hover .mg-avatar {
-  transform: scale(1.05);
+  transform: scale(1.08) rotate(-2deg);
 }
 
 .mg-header-info {
@@ -360,21 +495,22 @@
 }
 
 .mg-subject-title {
-  font-family: 'Google Sans', sans-serif;
-  font-size: 15px;
-  font-weight: 600;
-  color: #202124;
-  line-height: 1.3;
-  margin: 0 0 2px 0;
+  font-family: 'Plus Jakarta Sans', 'Google Sans', sans-serif;
+  font-size: 15.5px;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.25;
+  margin: 0 0 3px 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  letter-spacing: -0.2px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
 }
 
 .mg-teacher-meta {
-  font-family: 'Roboto', sans-serif;
-  font-size: 12px;
-  color: #5f6368;
+  font-size: 12.5px;
+  color: rgba(255, 255, 255, 0.70);
   display: flex;
   align-items: center;
   gap: 5px;
@@ -384,64 +520,69 @@
 }
 
 .mg-teacher-name {
-  font-weight: 500;
-  color: #3c4043;
+  font-weight: 600;
+  color: #ffffff;
 }
 
 .mg-meta-dot {
-  color: #bdc1c6;
+  color: rgba(255, 255, 255, 0.4);
   font-weight: bold;
 }
 
 .mg-teacher-dept {
-  color: #5f6368;
+  color: rgba(255, 255, 255, 0.70);
 }
 
-/* Subject Code Chip (Top-Right of Card) */
+/* Frosted Glass Subject Code Chip (Top-Right of Card) */
 .mg-subject-code {
-  font-family: 'Roboto', sans-serif;
+  font-family: 'Roboto Mono', monospace;
   font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.4px;
-  padding: 3px 8px;
-  border-radius: 6px;
-  background-color: #f1f3f4;
-  color: #5f6368;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 3px 9px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fde047;
+  border: 1px solid rgba(253, 224, 71, 0.35);
+  backdrop-filter: blur(12px);
   white-space: nowrap;
   flex-shrink: 0;
 }
 
 /* ==========================================================================
-   Sessions List
+   Sessions List (Frosted Glass Capsules)
    ========================================================================== */
 .mg-sessions-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  border-top: 1px solid #f1f3f4;
-  padding-top: 12px;
+  gap: 9px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  padding-top: 14px;
 }
 
 .mg-session-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  padding: 6px 10px;
-  background-color: #f8f9fa;
-  border: 1px solid #e8eaed;
-  border-radius: 8px;
-  transition: background-color 0.15s ease, border-color 0.15s ease;
+  gap: 10px;
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  transition: all 0.18s ease;
 }
 
 .mg-session-row:hover {
-  background-color: #f1f3f4;
-  border-color: #dadce0;
+  background: rgba(0, 0, 0, 0.32);
+  border-color: rgba(255, 255, 255, 0.24);
 }
 
 .mg-session-row.is-live-row {
-  background-color: #fff8f7;
-  border-color: #fad2cf;
+  background: rgba(225, 29, 72, 0.22);
+  border-color: rgba(244, 63, 94, 0.45);
+  box-shadow: 0 0 0 1px rgba(244, 63, 94, 0.3);
 }
 
 .mg-session-left {
@@ -454,14 +595,14 @@
 }
 
 .mg-session-label {
-  font-family: 'Roboto', sans-serif;
-  font-size: 11px;
+  font-size: 11.5px;
   font-weight: 600;
-  color: #3c4043;
-  padding: 2px 7px;
-  background: #ffffff;
-  border: 1px solid #dadce0;
-  border-radius: 4px;
+  color: #ffffff;
+  padding: 3px 9px;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 6px;
+  backdrop-filter: blur(10px);
   white-space: nowrap;
 }
 
@@ -469,33 +610,34 @@
 .mg-session-live-badge {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  font-size: 10px;
+  gap: 5px;
+  font-size: 10.5px;
   font-weight: 700;
-  padding: 2px 7px;
+  padding: 2.5px 8px;
   border-radius: 9999px;
-  background-color: #fce8e6;
-  color: #c5221f;
+  background: rgba(225, 29, 72, 0.35);
+  border: 1px solid rgba(244, 63, 94, 0.55);
+  color: #fda4af;
   letter-spacing: 0.3px;
   white-space: nowrap;
 }
 
 .mg-session-link-preview {
-  font-family: 'Roboto', monospace;
-  font-size: 11px;
-  color: #70757a;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 11.5px;
+  color: #93c5fd;
   text-decoration: none;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 140px;
+  max-width: 150px;
 }
 
 .mg-link-icon {
-  color: #9aa0a6;
+  color: #60a5fa;
   flex-shrink: 0;
 }
 
@@ -506,35 +648,41 @@
   flex-shrink: 0;
 }
 
-/* Primary "Join" Button (Google Blue Pill) */
+/* Primary "Join Class" Button */
 .mg-btn-join {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  background-color: #0b57d0;
+  gap: 5px;
+  background: linear-gradient(135deg, #1a73e8 0%, #0b57d0 100%);
   color: #ffffff;
-  font-family: 'Google Sans', Roboto, sans-serif;
+  font-family: 'Google Sans', sans-serif;
   font-size: 12px;
-  font-weight: 500;
-  padding: 5px 14px;
-  border-radius: 9999px !important;
+  font-weight: 600;
+  padding: 6px 15px;
+  border-radius: 9999px;
   text-decoration: none;
   border: none;
   cursor: pointer;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
-  transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+  box-shadow:
+    0 4px 14px rgba(26, 115, 232, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
   white-space: nowrap;
 }
 
 .mg-btn-join:hover {
-  background-color: #0842a0;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  background: linear-gradient(135deg, #1557b0 0%, #0d47a1 100%);
   transform: translateY(-1px);
+  box-shadow:
+    0 6px 18px rgba(26, 115, 232, 0.60),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  color: #ffffff;
 }
 
 .mg-btn-join:active {
   transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(26, 115, 232, 0.3);
 }
 
 .mg-btn-join svg {
@@ -543,58 +691,63 @@
   fill: #ffffff;
 }
 
-/* Secondary Copy Button */
+/* Secondary Frosted Glass Copy Link Button */
 .mg-btn-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 32px;
   height: 32px;
-  border-radius: 50%;
-  border: none !important;
-  background-color: transparent !important;
-  color: #5f6368;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.20) !important;
+  background: rgba(255, 255, 255, 0.12) !important;
+  color: #ffffff;
   cursor: pointer;
-  transition: background-color 0.15s ease, color 0.15s ease;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  transition: all 0.15s ease;
   position: relative;
   padding: 0;
   flex-shrink: 0;
 }
 
 .mg-btn-icon:hover {
-  background-color: rgba(60, 64, 67, 0.08) !important;
-  color: #202124;
+  background: rgba(255, 255, 255, 0.22) !important;
+  border-color: rgba(255, 255, 255, 0.40) !important;
+  transform: translateY(-1px);
 }
 
 .mg-btn-icon svg {
-  width: 16px;
-  height: 16px;
+  width: 15px;
+  height: 15px;
   fill: currentColor;
 }
 
 .mg-btn-icon.copied {
-  background-color: #e6f4ea !important;
-  color: #137333;
+  background: rgba(16, 185, 129, 0.3) !important;
+  border-color: rgba(52, 211, 153, 0.6) !important;
+  color: #a7f3d0;
 }
 
 .mg-btn-icon::after {
   content: attr(data-tooltip);
   position: absolute;
-  bottom: 120%;
+  bottom: 125%;
   left: 50%;
   transform: translateX(-50%) translateY(4px);
-  background-color: #202124;
+  background: #0f172a;
   color: #ffffff;
   font-size: 11px;
   font-weight: 500;
-  font-family: 'Google Sans', Roboto, sans-serif;
+  font-family: 'Google Sans', sans-serif;
   padding: 4px 8px;
-  border-radius: 4px;
+  border-radius: 6px;
   white-space: nowrap;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.15s ease, transform 0.15s ease;
   z-index: 100;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
 }
 
 .mg-btn-icon:hover::after {
@@ -608,19 +761,21 @@
   bottom: 24px;
   left: 50%;
   transform: translateX(-50%) translateY(20px);
-  background-color: #323232;
-  color: #f1f3f4;
+  background: rgba(15, 23, 42, 0.92);
+  backdrop-filter: blur(20px);
+  color: #f8fafc;
   padding: 10px 18px;
   border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
   font-size: 13px;
   font-weight: 500;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.28);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
   display: flex;
   align-items: center;
   gap: 8px;
   opacity: 0;
   pointer-events: none;
-  transition: all 0.25s cubic-bezier(0.2, 0, 0, 1);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   z-index: 99999;
 }
 
@@ -632,7 +787,7 @@
 .mg-toast svg {
   width: 16px;
   height: 16px;
-  fill: #81c995;
+  fill: #34d399;
 }
 
 /* Empty Schedule State */
@@ -642,32 +797,36 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 40px 16px;
+  padding: 48px 16px;
   text-align: center;
   gap: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  backdrop-filter: blur(20px);
 }
 
 .mg-empty-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background-color: #f1f3f4;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.12);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #5f6368;
+  color: #cbd5e1;
 }
 
 .mg-empty-title {
-  font-family: 'Google Sans', sans-serif;
-  font-size: 15px;
-  font-weight: 600;
-  color: #202124;
+  font-family: 'Plus Jakarta Sans', 'Google Sans', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
   margin: 0;
 }
 
 .mg-empty-subtitle {
   font-size: 13px;
-  color: #5f6368;
+  color: rgba(255, 255, 255, 0.7);
   margin: 0;
 }

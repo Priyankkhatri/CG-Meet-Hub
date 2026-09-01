@@ -490,12 +490,18 @@
     const dashboard = document.createElement('div');
     dashboard.id = 'cgmeethub-dashboard';
 
-    // Centered subtle watermark
-    const watermark = document.createElement('div');
-    watermark.className = 'mg-watermark';
-    watermark.setAttribute('aria-hidden', 'true');
-    watermark.innerHTML = ICONS.codingGitaWatermark;
-    dashboard.appendChild(watermark);
+    // Ambient CodingGita purple cosmic mesh background
+    const bgMesh = document.createElement('div');
+    bgMesh.className = 'mg-bg-mesh';
+    bgMesh.setAttribute('aria-hidden', 'true');
+    bgMesh.innerHTML = `
+      <div class="mg-mesh-orb mg-mesh-orb-1"></div>
+      <div class="mg-mesh-orb mg-mesh-orb-2"></div>
+      <div class="mg-mesh-orb mg-mesh-orb-3"></div>
+      <div class="mg-mesh-orb mg-mesh-orb-4"></div>
+      <div class="mg-watermark">${ICONS.codingGitaWatermark}</div>
+    `;
+    dashboard.appendChild(bgMesh);
 
     const liveCount = CG_MEET_HUB_CLASSES.filter(c => c.sessions && c.sessions.some(s => s.status === 'live')).length;
     const upcomingCount = CG_MEET_HUB_CLASSES.filter(c => c.sessions && c.sessions.some(s => s.status === 'upcoming')).length;
