@@ -1,14 +1,13 @@
 /**
  * CG Meet Hub - Google Meet Class Schedule Content Script
  * 
- * Root Cause Resolution:
- * 1. Google Meet's Wiz Framework periodically re-renders and reconciles the contents of
- *    its Agenda Controller (`.cadSnb` / `div[jscontroller]`) when fetching agenda data.
- * 2. Injected nodes placed *inside* that controlled subtree get wiped out during Wiz reconciliation cycles.
- * 3. FIX: Hide the agenda empty-state container (`.cadSnb` / `.VBauye`) atomically and inject
- *    `#cgmeethub-dashboard` into the stable parent container (`div.u88fae` / column wrapper) as a sibling.
- * 4. Strictly Idempotent: If the dashboard is already present in document.body and healthy, the injection
- *    cycle never destroys or recreates it.
+ * Multi-Session Card Architecture & Material Visual Design:
+ * 1. Single Source of Truth: CG_MEET_HUB_CLASSES groups sessions per teacher+subject.
+ * 2. Generic Multi-Session Cards: Handles 1, 2, or N sessions per card dynamically.
+ * 3. Material Design 3 Palette: Dynamic per-teacher avatar colors & left-accent styling.
+ * 4. Scoped Live Indicators: Live badge attached to the specific active session row.
+ * 5. Robust Ingress: Injects into stable parent (div.u88fae) alongside native agenda container.
+ * 6. Idempotent Lifecycle: Does not thrash DOM on background Google Meet reconciliations.
  */
 
 (function () {
@@ -19,130 +18,161 @@
   window.__cgmeethub_initialized = true;
 
   /* ==========================================================================
-     1. Class Schedule Dataset (Single Source of Truth)
+     1. Class Schedule Dataset (Grouped by Teacher & Subject)
      ========================================================================== */
   const CG_MEET_HUB_CLASSES = [
     {
-      id: "react-1",
+      id: "react",
       subjectCode: "CS-301",
       subject: "React.js Development",
       teacher: "Rajesh Ranjan Sir",
       teacherInitials: "RR",
       department: "Computer Science & Engineering",
-      session: "Before Break",
-      link: "https://meet.google.com/zkb-hdxv-aba",
-      startTime: "09:00 AM",
-      endTime: "10:30 AM",
-      status: "upcoming", // "live" | "upcoming" | "completed"
+      sessions: [
+        {
+          label: "Before Break",
+          link: "https://meet.google.com/zkb-hdxv-aba",
+          startTime: "09:00 AM",
+          endTime: "10:30 AM",
+          status: "upcoming",
+        },
+        {
+          label: "After Break",
+          link: "https://meet.google.com/hwu-yqkb-zyi",
+          startTime: "11:00 AM",
+          endTime: "12:30 PM",
+          status: "upcoming",
+        },
+      ],
     },
     {
-      id: "react-2",
-      subjectCode: "CS-301",
-      subject: "React.js Development",
-      teacher: "Rajesh Ranjan Sir",
-      teacherInitials: "RR",
-      department: "Computer Science & Engineering",
-      session: "After Break",
-      link: "https://meet.google.com/hwu-yqkb-zyi",
-      startTime: "11:00 AM",
-      endTime: "12:30 PM",
-      status: "upcoming",
-    },
-    {
-      id: "dbms-1",
+      id: "dbms",
       subjectCode: "CS-205",
       subject: "Database Management Systems",
       teacher: "Adil Sir",
       teacherInitials: "AS",
       department: "Information Technology",
-      session: "Before Break",
-      link: "https://meet.google.com/mqs-fenu-wkc",
-      startTime: "09:00 AM",
-      endTime: "10:30 AM",
-      status: "upcoming",
+      sessions: [
+        {
+          label: "Before Break",
+          link: "https://meet.google.com/mqs-fenu-wkc",
+          startTime: "09:00 AM",
+          endTime: "10:30 AM",
+          status: "upcoming",
+        },
+        {
+          label: "After Break",
+          link: "https://meet.google.com/mfy-tqua-keb",
+          startTime: "11:00 AM",
+          endTime: "12:30 PM",
+          status: "upcoming",
+        },
+      ],
     },
     {
-      id: "dbms-2",
-      subjectCode: "CS-205",
-      subject: "Database Management Systems",
-      teacher: "Adil Sir",
-      teacherInitials: "AS",
-      department: "Information Technology",
-      session: "After Break",
-      link: "https://meet.google.com/mfy-tqua-keb",
-      startTime: "11:00 AM",
-      endTime: "12:30 PM",
-      status: "upcoming",
-    },
-    {
-      id: "nextjs-1",
+      id: "nextjs",
       subjectCode: "CS-310",
       subject: "Next.js Development",
       teacher: "Next.js Sir",
       teacherInitials: "NJ",
       department: "Computer Science & Engineering",
-      session: "Full Session",
-      link: "https://meet.google.com/xhb-ghvy-oys",
-      startTime: "01:00 PM",
-      endTime: "02:30 PM",
-      status: "upcoming",
+      sessions: [
+        {
+          label: "Full Session",
+          link: "https://meet.google.com/xhb-ghvy-oys",
+          startTime: "01:00 PM",
+          endTime: "02:30 PM",
+          status: "upcoming",
+        },
+      ],
     },
     {
-      id: "dsa-1",
+      id: "dsa",
       subjectCode: "CS-201",
       subject: "Data Structures & Algorithms",
       teacher: "Samir Sir",
       teacherInitials: "SS",
       department: "Computer Science & Engineering",
-      session: "Full Session",
-      link: "https://meet.google.com/onx-qzxa-sao",
-      startTime: "02:45 PM",
-      endTime: "04:15 PM",
-      status: "upcoming",
+      sessions: [
+        {
+          label: "Full Session",
+          link: "https://meet.google.com/onx-qzxa-sao",
+          startTime: "02:45 PM",
+          endTime: "04:15 PM",
+          status: "upcoming",
+        },
+      ],
     },
     {
-      id: "neel-1",
+      id: "neel",
       subjectCode: "GEN-000",
       subject: "General Session",
       teacher: "Neel Sir",
       teacherInitials: "NS",
       department: "Computer Science & Engineering",
-      session: "Full Session",
-      link: "https://meet.google.com/baj-jazt-nit",
-      startTime: "04:30 PM",
-      endTime: "05:30 PM",
-      status: "upcoming",
+      sessions: [
+        {
+          label: "Full Session",
+          link: "https://meet.google.com/baj-jazt-nit",
+          startTime: "04:30 PM",
+          endTime: "05:30 PM",
+          status: "upcoming",
+        },
+      ],
     },
     {
-      id: "sumit-1",
+      id: "sumit",
       subjectCode: "GEN-001",
       subject: "Subject TBD",
       teacher: "Sumit Sir",
       teacherInitials: "SM",
       department: "Computer Science & Engineering",
-      session: "Full Session",
-      link: "https://meet.google.com/uhk-yvok-tqy",
-      startTime: "05:45 PM",
-      endTime: "06:45 PM",
-      status: "upcoming",
+      sessions: [
+        {
+          label: "Full Session",
+          link: "https://meet.google.com/uhk-yvok-tqy",
+          startTime: "05:45 PM",
+          endTime: "06:45 PM",
+          status: "upcoming",
+        },
+      ],
     },
     {
-      id: "mongodb-1",
+      id: "mongodb",
       subjectCode: "CS-220",
       subject: "MongoDB",
       teacher: "Yogesh Sir",
       teacherInitials: "YS",
       department: "Computer Science & Engineering",
-      session: "Full Session",
-      link: "https://meet.google.com/odt-xfzb-emm",
-      startTime: "07:00 PM",
-      endTime: "08:00 PM",
-      status: "upcoming",
-    }
+      sessions: [
+        {
+          label: "Full Session",
+          link: "https://meet.google.com/odt-xfzb-emm",
+          startTime: "07:00 PM",
+          endTime: "08:00 PM",
+          status: "upcoming",
+        },
+      ],
+    },
   ];
+  const MEETGITA_CLASSES = CG_MEET_HUB_CLASSES;
 
   /* ==========================================================================
-     2. Phase 2 Timetable Helper Functions
+     2. Per-Teacher Material Palette Configuration
+     ========================================================================== */
+  const TEACHER_THEMES = {
+    "RR": { primary: "#0b57d0", bg: "#e8f0fe", accent: "#1a73e8" }, // Google Blue (Rajesh Ranjan Sir)
+    "AS": { primary: "#137333", bg: "#e6f4ea", accent: "#1e8e3e" }, // Google Green (Adil Sir)
+    "NJ": { primary: "#6e41c0", bg: "#f3e8fd", accent: "#8430ce" }, // Violet Purple (Next.js Sir)
+    "SS": { primary: "#b06000", bg: "#fef3e2", accent: "#e37400" }, // Amber Orange (Samir Sir)
+    "NS": { primary: "#007b83", bg: "#e0f2f1", accent: "#0097a7" }, // Teal Cyan (Neel Sir)
+    "SM": { primary: "#c5221f", bg: "#fce8e6", accent: "#d93025" }, // Coral Red (Sumit Sir)
+    "YS": { primary: "#1b5e20", bg: "#e8f5e9", accent: "#2e7d32" }, // Emerald Forest (Yogesh Sir)
+  };
+  const DEFAULT_THEME = { primary: "#0b57d0", bg: "#e8f0fe", accent: "#1a73e8" };
+
+  /* ==========================================================================
+     3. Helper Functions & SVG Icons
      ========================================================================== */
   function parseTimeToMinutes(timeStr) {
     if (!timeStr) return 0;
@@ -153,30 +183,26 @@
     return hours * 60 + minutes;
   }
 
-  function computeClassStatus(cls, now = new Date()) {
-    if (!cls.startTime || !cls.endTime) return cls.status || "upcoming";
+  function computeSessionStatus(session, now = new Date()) {
+    if (!session.startTime || !session.endTime) return session.status || "upcoming";
     const nowMinutes = now.getHours() * 60 + now.getMinutes();
-    const start = parseTimeToMinutes(cls.startTime);
-    const end = parseTimeToMinutes(cls.endTime);
+    const start = parseTimeToMinutes(session.startTime);
+    const end = parseTimeToMinutes(session.endTime);
     if (nowMinutes >= start && nowMinutes <= end) return "live";
     if (nowMinutes < start) return "upcoming";
     return "completed";
   }
 
-  /* ==========================================================================
-     3. SVG Icons
-     ========================================================================== */
   const ICONS = {
     calendarHeader: `<svg viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20a2 2 0 0 0 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2zM7 12h5v5H7z"/></svg>`,
     videoCam: `<svg viewBox="0 0 24 24"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>`,
     copy: `<svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>`,
     check: `<svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>`,
-    clock: `<svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>`,
     calendarEmpty: `<svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19a2 2 0 0 0 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/></svg>`
   };
 
   /* ==========================================================================
-     4. State & Helpers
+     4. State & Controls
      ========================================================================== */
   let activeFilter = 'all';
   let observer = null;
@@ -276,7 +302,6 @@
    * Discovers the agenda empty state container (.cadSnb / .VBauye) and its stable parent (div.u88fae).
    */
   function findNativeContainers() {
-    // 1. Check if we already have a marked container attached
     const marked = document.querySelector('[data-cgmeethub-native-hidden="true"]');
     if (marked && document.body.contains(marked) && marked.parentElement) {
       return {
@@ -286,7 +311,6 @@
       };
     }
 
-    // 2. Full TreeWalker search for agenda empty state phrases
     const searchPhrases = [
       'No meetings scheduled for today',
       'No meetings scheduled',
@@ -313,14 +337,12 @@
           const textElem = node.parentElement;
           if (!textElem) continue;
 
-          // Find the empty state card container (.VBauye or NuUMIe parent)
           const emptyCard = textElem.closest('.VBauye') ||
                             (textElem.closest('.NuUMIe') ? textElem.closest('.NuUMIe').parentElement : null) ||
                             textElem.closest('div[jscontroller]') ||
                             textElem.closest('div[role="region"]');
 
           if (emptyCard && emptyCard !== document.body && emptyCard.parentElement) {
-            // Find the higher agenda controller wrapper if present (.cadSnb)
             const agendaWrapper = emptyCard.closest('.cadSnb') || emptyCard;
             const stableParent = agendaWrapper.parentElement;
 
@@ -340,60 +362,79 @@
   }
 
   /* ==========================================================================
-     6. Card & Dashboard Rendering
+     6. Card & Dashboard Rendering (Multi-Session & Palette Redesign)
      ========================================================================== */
 
   function renderCard(cls) {
-    const card = document.createElement('div');
-    card.className = `mg-card ${cls.status === 'live' ? 'is-live' : ''}`;
-
-    const statusBadge = cls.status === 'live'
-      ? `<span class="mg-status-badge live"><span class="mg-pulsing-dot"></span> LIVE</span>`
-      : '';
-
-    const sessionBadge = cls.session
-      ? `<span class="mg-session-badge">${cls.session}</span>`
-      : '';
-
-    const meetCode = extractMeetCode(cls.link);
     const initials = cls.teacherInitials || getInitials(cls.teacher);
+    const theme = TEACHER_THEMES[initials] || DEFAULT_THEME;
+    const hasLiveSession = cls.sessions && cls.sessions.some(s => s.status === 'live');
 
-    card.innerHTML = `
-      <div class="mg-card-top">
-        <div class="mg-tags-group">
-          <span class="mg-subject-code">${cls.subjectCode || 'CLASS'}</span>
-          ${sessionBadge}
-        </div>
-        ${statusBadge}
-      </div>
-      <div class="mg-card-content">
-        <h3 class="mg-subject-title" title="${cls.subject}">${cls.subject}</h3>
-        <div class="mg-teacher-row">
-          <div class="mg-avatar">${initials}</div>
-          <div class="mg-teacher-info">
-            <span class="mg-teacher-name">${cls.teacher}</span>
-            <span class="mg-teacher-dept">${cls.department || 'CodingGita'}</span>
+    const card = document.createElement('div');
+    card.className = `mg-card ${hasLiveSession ? 'is-live-card' : ''}`;
+    card.style.setProperty('--mg-theme-primary', theme.primary);
+    card.style.setProperty('--mg-theme-bg', theme.bg);
+    card.style.setProperty('--mg-theme-accent', theme.accent);
+
+    // Build session rows dynamically and generically
+    const sessionRowsHtml = (cls.sessions || []).map((session, idx) => {
+      const meetCode = extractMeetCode(session.link);
+      const isLive = session.status === 'live';
+      const liveBadge = isLive
+        ? `<span class="mg-session-live-badge"><span class="mg-pulsing-dot"></span> LIVE</span>`
+        : '';
+
+      return `
+        <div class="mg-session-row ${isLive ? 'is-live-row' : ''}">
+          <div class="mg-session-left">
+            <span class="mg-session-label">${session.label || `Session ${idx + 1}`}</span>
+            ${liveBadge}
+            <span class="mg-session-link-preview" title="${session.link}">meet.google.com/${meetCode}</span>
+          </div>
+          <div class="mg-session-actions">
+            <button type="button" class="mg-btn-icon" data-link="${session.link}" data-tooltip="Copy meeting link" aria-label="Copy meeting link">
+              ${ICONS.copy}
+            </button>
+            <a href="${session.link}" class="mg-btn-join" target="_blank" rel="noopener noreferrer">
+              ${ICONS.videoCam} Join
+            </a>
           </div>
         </div>
-      </div>
-      <div class="mg-card-actions">
-        <span class="mg-link-preview" title="${cls.link}">meet.google.com/${meetCode}</span>
-        <div class="mg-action-buttons">
-          <button type="button" class="mg-btn-icon" data-tooltip="Copy meeting link" aria-label="Copy meeting link">
-            ${ICONS.copy}
-          </button>
-          <a href="${cls.link}" class="mg-btn-join" target="_blank" rel="noopener noreferrer">
-            ${ICONS.videoCam} Join Class
-          </a>
+      `;
+    }).join('');
+
+    card.innerHTML = `
+      <div class="mg-card-header">
+        <div class="mg-card-header-left">
+          <div class="mg-avatar" style="background-color: ${theme.bg}; color: ${theme.primary}; border-color: ${theme.accent};">
+            ${initials}
+          </div>
+          <div class="mg-header-info">
+            <h3 class="mg-subject-title" title="${cls.subject}">${cls.subject}</h3>
+            <div class="mg-teacher-meta">
+              <span class="mg-teacher-name">${cls.teacher}</span>
+              <span class="mg-meta-dot">·</span>
+              <span class="mg-teacher-dept">${cls.department || 'CodingGita'}</span>
+            </div>
+          </div>
         </div>
+        <div class="mg-card-header-right">
+          <span class="mg-subject-code">${cls.subjectCode || 'CLASS'}</span>
+        </div>
+      </div>
+      <div class="mg-sessions-list">
+        ${sessionRowsHtml}
       </div>
     `;
 
-    const copyBtn = card.querySelector('.mg-btn-icon');
-    copyBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      copyMeetLink(cls.link, copyBtn);
+    // Bind copy link buttons
+    card.querySelectorAll('.mg-btn-icon').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const link = btn.getAttribute('data-link');
+        if (link) copyMeetLink(link, btn);
+      });
     });
 
     return card;
@@ -406,8 +447,8 @@
     container.innerHTML = '';
 
     const filtered = CG_MEET_HUB_CLASSES.filter(item => {
-      if (activeFilter === 'live') return item.status === 'live';
-      if (activeFilter === 'upcoming') return item.status === 'upcoming';
+      if (activeFilter === 'live') return item.sessions && item.sessions.some(s => s.status === 'live');
+      if (activeFilter === 'upcoming') return item.sessions && item.sessions.some(s => s.status === 'upcoming');
       return true;
     });
 
@@ -431,8 +472,8 @@
     const dashboard = document.createElement('div');
     dashboard.id = 'cgmeethub-dashboard';
 
-    const liveCount = CG_MEET_HUB_CLASSES.filter(c => c.status === 'live').length;
-    const upcomingCount = CG_MEET_HUB_CLASSES.filter(c => c.status === 'upcoming').length;
+    const liveCount = CG_MEET_HUB_CLASSES.filter(c => c.sessions && c.sessions.some(s => s.status === 'live')).length;
+    const upcomingCount = CG_MEET_HUB_CLASSES.filter(c => c.sessions && c.sessions.some(s => s.status === 'upcoming')).length;
 
     const header = document.createElement('div');
     header.className = 'mg-header';
@@ -507,7 +548,6 @@
     const containers = findNativeContainers();
     const existingDashboard = document.getElementById('cgmeethub-dashboard') || document.getElementById('meetgita-dashboard');
 
-    // 1. Hide native container atomically
     if (containers && containers.hideTarget) {
       containers.hideTarget.dataset.cgmeethubNativeHidden = "true";
       if (containers.hideTarget.style.display !== 'none') {
@@ -517,12 +557,10 @@
       }
     }
 
-    // 2. IDEMPOTENT CHECK: If dashboard already exists, is healthy, and in DOM, do NOT touch it!
     if (isDashboardHealthy(existingDashboard)) {
       return;
     }
 
-    // 3. If parent container is not yet ready in DOM, wait for next mutation
     if (!containers || !containers.parent) {
       return;
     }
@@ -535,9 +573,8 @@
       }
 
       const dashboard = createDashboardElement();
-      // Insert into stable parent alongside the agenda container
       containers.parent.insertBefore(dashboard, containers.insertRef);
-      console.log('[CG Meet Hub] Injected class schedule dashboard into stable container.');
+      console.log('[CG Meet Hub] Injected multi-session class schedule dashboard into stable container.');
     } catch (err) {
       console.error('[CG Meet Hub] Injection error:', err);
     } finally {
@@ -590,7 +627,6 @@
     });
   }
 
-  // Initial boot
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
       tryInjectDashboard();
@@ -601,7 +637,6 @@
     setupPersistentObserver();
   }
 
-  // React to visibility / tab changes
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden) {
       tryInjectDashboard();
@@ -612,7 +647,6 @@
     tryInjectDashboard();
   });
 
-  // SPA navigation handling
   window.addEventListener('popstate', tryInjectDashboard);
 
   const origPushState = history.pushState;

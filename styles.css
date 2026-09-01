@@ -35,7 +35,7 @@
 }
 
 /* ==========================================================================
-   Header Section (Clean title without redundant date line)
+   Header Section (Clean title with live counter & filter chips)
    ========================================================================== */
 .mg-header {
   display: flex;
@@ -187,6 +187,7 @@
   gap: 16px;
   box-sizing: border-box;
   width: 100%;
+  align-items: stretch;
 }
 
 @media (max-width: 680px) {
@@ -196,86 +197,69 @@
 }
 
 /* ==========================================================================
-   Class Card (12px border radius, No left-border stripe)
+   Class Card (Material 3 with Left Accent Bar & Multi-Session Layout)
    ========================================================================== */
 .mg-card {
   background: #ffffff;
   border: 1px solid #dadce0;
+  border-left: 4px solid var(--mg-theme-accent, #1a73e8);
   border-radius: 12px;
   padding: 16px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 12px;
+  gap: 14px;
   box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
-  transition: transform 0.15s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.15s cubic-bezier(0.2, 0, 0, 1), border-color 0.15s ease;
+  transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.2s cubic-bezier(0.2, 0, 0, 1);
   box-sizing: border-box;
   position: relative;
 }
 
 .mg-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(60, 64, 67, 0.16);
-  border-color: #0b57d0;
+  box-shadow: 0 4px 14px rgba(60, 64, 67, 0.18);
 }
 
-/* Card Top Tags */
-.mg-card-top {
+/* Card Header: Avatar, Subject Title, Teacher, Subject Code */
+.mg-card-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  gap: 8px;
+  gap: 10px;
 }
 
-.mg-tags-group {
+.mg-card-header-left {
   display: flex;
   align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
+  gap: 12px;
+  min-width: 0;
+  flex: 1;
 }
 
-.mg-subject-code {
-  font-family: 'Roboto', sans-serif;
-  font-size: 11px;
+/* Colored Circular Avatar */
+.mg-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 13px;
   font-weight: 700;
-  letter-spacing: 0.5px;
-  padding: 2px 8px;
-  border-radius: 4px;
-  background-color: #f1f3f4;
-  color: #3c4043;
-}
-
-.mg-session-badge {
-  font-family: 'Roboto', sans-serif;
-  font-size: 11px;
-  font-weight: 500;
-  padding: 2px 8px;
-  border-radius: 4px;
-  background-color: #f8f9fa;
-  border: 1px solid #e8eaed;
-  color: #5f6368;
-}
-
-.mg-status-badge {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 4px;
-  font-size: 11px;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 9999px;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 1px solid transparent;
+  transition: transform 0.15s ease;
 }
 
-.mg-status-badge.live {
-  background-color: #fce8e6;
-  color: #c5221f;
+.mg-card:hover .mg-avatar {
+  transform: scale(1.05);
 }
 
-/* Card Content */
-.mg-card-content {
+.mg-header-info {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  overflow: hidden;
+  min-width: 0;
 }
 
 .mg-subject-title {
@@ -283,114 +267,164 @@
   font-size: 15px;
   font-weight: 600;
   color: #202124;
-  line-height: 1.35;
-  margin: 0;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+  line-height: 1.3;
+  margin: 0 0 2px 0;
+  white-space: nowrap;
   overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.mg-teacher-row {
+.mg-teacher-meta {
+  font-family: 'Roboto', sans-serif;
+  font-size: 12px;
+  color: #5f6368;
   display: flex;
   align-items: center;
-  gap: 8px;
-}
-
-.mg-avatar {
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  background: #e8f0fe;
-  color: #0b57d0;
-  font-size: 11px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.mg-teacher-info {
-  display: flex;
-  flex-direction: column;
+  gap: 5px;
+  white-space: nowrap;
   overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .mg-teacher-name {
-  font-family: 'Roboto', sans-serif;
-  font-size: 13px;
-  color: #202124;
   font-weight: 500;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  color: #3c4043;
+}
+
+.mg-meta-dot {
+  color: #bdc1c6;
+  font-weight: bold;
 }
 
 .mg-teacher-dept {
-  font-family: 'Roboto', sans-serif;
-  font-size: 11px;
   color: #5f6368;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
-/* Card Actions */
-.mg-card-actions {
+/* Subject Code Chip (Top-Right of Card) */
+.mg-subject-code {
+  font-family: 'Roboto', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background-color: #f1f3f4;
+  color: #5f6368;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ==========================================================================
+   Sessions List (Generic Multi-Session Rows)
+   ========================================================================== */
+.mg-sessions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-top: 1px solid #f1f3f4;
+  padding-top: 12px;
+}
+
+.mg-session-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding-top: 10px;
-  border-top: 1px solid #f1f3f4;
+  padding: 6px 10px;
+  background-color: #f8f9fa;
+  border: 1px solid #e8eaed;
+  border-radius: 8px;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
-.mg-link-preview {
-  font-family: 'Roboto', monospace;
+.mg-session-row:hover {
+  background-color: #f1f3f4;
+  border-color: #dadce0;
+}
+
+.mg-session-row.is-live-row {
+  background-color: #fff8f7;
+  border-color: #fad2cf;
+}
+
+.mg-session-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+  flex-wrap: wrap;
+}
+
+.mg-session-label {
+  font-family: 'Roboto', sans-serif;
   font-size: 11px;
-  color: #5f6368;
-  text-decoration: none;
-  background: #f8f9fa;
-  border: 1px solid #e8eaed;
-  padding: 3px 6px;
+  font-weight: 600;
+  color: #3c4043;
+  padding: 2px 7px;
+  background: #ffffff;
+  border: 1px solid #dadce0;
   border-radius: 4px;
-  max-width: 120px;
-  overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.mg-action-buttons {
+/* Scoped Live Badge on the Specific Session Row */
+.mg-session-live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 9999px;
+  background-color: #fce8e6;
+  color: #c5221f;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+.mg-session-link-preview {
+  font-family: 'Roboto', monospace;
+  font-size: 11px;
+  color: #70757a;
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 140px;
+}
+
+.mg-session-actions {
   display: flex;
   align-items: center;
   gap: 6px;
+  flex-shrink: 0;
 }
 
-/* Primary "Join Class" Google Pill Button */
+/* Compact Google Pill "Join" Button */
 .mg-btn-join {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 4px;
   background-color: #0b57d0;
   color: #ffffff;
   font-family: 'Google Sans', Roboto, sans-serif;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
-  padding: 7px 18px;
+  padding: 5px 14px;
   border-radius: 9999px !important;
   text-decoration: none;
   border: none;
   cursor: pointer;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
   transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
   white-space: nowrap;
 }
 
 .mg-btn-join:hover {
   background-color: #0842a0;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
   transform: translateY(-1px);
 }
 
@@ -399,18 +433,18 @@
 }
 
 .mg-btn-join svg {
-  width: 15px;
-  height: 15px;
+  width: 13px;
+  height: 13px;
   fill: #ffffff;
 }
 
-/* Borderless Icon Button with Gray Circular Hover */
+/* Compact Borderless Copy Button with Hover Circle */
 .mg-btn-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   border: none !important;
   background-color: transparent !important;
@@ -423,13 +457,13 @@
 }
 
 .mg-btn-icon:hover {
-  background-color: #f1f3f4 !important;
+  background-color: rgba(60, 64, 67, 0.08) !important;
   color: #202124;
 }
 
 .mg-btn-icon svg {
-  width: 17px;
-  height: 17px;
+  width: 16px;
+  height: 16px;
   fill: currentColor;
 }
 
