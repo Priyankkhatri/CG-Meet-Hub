@@ -386,29 +386,38 @@
   function renderCard(cls) {
     const initials = cls.teacherInitials || getInitials(cls.teacher);
     const hasLiveSession = cls.sessions && cls.sessions.some(s => s.status === 'live');
+    const theme = TEACHER_THEMES[initials] || DEFAULT_THEME;
 
     const card = document.createElement('div');
     card.className = `mg-card ${hasLiveSession ? 'is-live-card' : ''}`;
+    card.style.setProperty('--teacher-accent', theme.primary);
+    card.style.setProperty('--teacher-rgb', theme.rgb);
+    card.style.setProperty('--teacher-bg', theme.bg);
 
     // Interactive Liquid Glass cursor spotlight reflection (inspired by archisvaze/liquid-glass)
     const glare = document.createElement('div');
     glare.className = 'mg-card-glare';
     card.appendChild(glare);
 
+    let rafId = null;
     card.addEventListener('mousemove', (e) => {
-      const rect = card.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      const rotateX = ((y / rect.height) - 0.5) * -4;
-      const rotateY = ((x / rect.width) - 0.5) * 4;
+      if (rafId) cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const rotateX = ((y / rect.height) - 0.5) * -5;
+        const rotateY = ((x / rect.width) - 0.5) * 5;
 
-      card.style.setProperty('--mouse-x', `${x}px`);
-      card.style.setProperty('--mouse-y', `${y}px`);
-      card.style.setProperty('--card-rotate-x', `${rotateX.toFixed(2)}deg`);
-      card.style.setProperty('--card-rotate-y', `${rotateY.toFixed(2)}deg`);
+        card.style.setProperty('--mouse-x', `${x}px`);
+        card.style.setProperty('--mouse-y', `${y}px`);
+        card.style.setProperty('--card-rotate-x', `${rotateX.toFixed(2)}deg`);
+        card.style.setProperty('--card-rotate-y', `${rotateY.toFixed(2)}deg`);
+      });
     });
 
     card.addEventListener('mouseleave', () => {
+      if (rafId) cancelAnimationFrame(rafId);
       card.style.removeProperty('--card-rotate-x');
       card.style.removeProperty('--card-rotate-y');
       card.style.removeProperty('--mouse-x');
@@ -514,6 +523,15 @@
   function createDashboardElement() {
     const dashboard = document.createElement('div');
     dashboard.id = 'cgmeethub-dashboard';
+
+    // Ambient background tracking for subtle cursor light sheen
+    dashboard.addEventListener('mousemove', (e) => {
+      const rect = dashboard.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      dashboard.style.setProperty('--dash-mouse-x', `${x}px`);
+      dashboard.style.setProperty('--dash-mouse-y', `${y}px`);
+    });
 
     // Centered CodingGita watermark background visible behind cards
     const watermark = document.createElement('div');
