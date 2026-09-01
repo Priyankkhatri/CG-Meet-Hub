@@ -490,7 +490,18 @@
     const dashboard = document.createElement('div');
     dashboard.id = 'cgmeethub-dashboard';
 
-    // Faint subtle CodingGita brand watermark
+    // Ambient liquid glass glow blobs behind cards
+    const blobs = document.createElement('div');
+    blobs.className = 'mg-blobs-container';
+    blobs.setAttribute('aria-hidden', 'true');
+    blobs.innerHTML = `
+      <div class="mg-blob mg-blob-1"></div>
+      <div class="mg-blob mg-blob-2"></div>
+      <div class="mg-blob mg-blob-3"></div>
+    `;
+    dashboard.appendChild(blobs);
+
+    // Centered CodingGita brand watermark
     const watermark = document.createElement('div');
     watermark.className = 'mg-watermark';
     watermark.setAttribute('aria-hidden', 'true');

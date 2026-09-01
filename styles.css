@@ -35,6 +35,56 @@
   font-family: inherit;
 }
 
+/* Ambient Liquid Glass Color Blobs (Soft background diffusion) */
+.mg-blobs-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.mg-blob {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  transform: translate3d(0, 0, 0);
+  will-change: transform;
+}
+
+.mg-blob-1 {
+  top: 6%;
+  left: -40px;
+  width: 320px;
+  height: 320px;
+  background: radial-gradient(circle, #581273 0%, rgba(88, 18, 115, 0) 70%);
+  filter: blur(80px);
+  opacity: 0.20;
+}
+
+.mg-blob-2 {
+  top: 36%;
+  right: -50px;
+  width: 360px;
+  height: 360px;
+  background: radial-gradient(circle, #f8b721 0%, rgba(248, 183, 33, 0) 70%);
+  filter: blur(90px);
+  opacity: 0.22;
+}
+
+.mg-blob-3 {
+  bottom: 6%;
+  left: 22%;
+  width: 320px;
+  height: 320px;
+  background: radial-gradient(circle, #1a73e8 0%, rgba(26, 115, 232, 0) 70%);
+  filter: blur(85px);
+  opacity: 0.18;
+}
+
 /* Subtle CodingGita Brand Watermark (Centered Background Texture) */
 .mg-watermark {
   position: absolute;
@@ -45,7 +95,7 @@
   max-width: 720px;
   height: auto;
   aspect-ratio: 1 / 1;
-  opacity: 0.12; /* 12% opacity: clearly visible, crisp grey watermark */
+  opacity: 0.11; /* 11% opacity: clearly legible CodingGita text through glass and in gaps */
   pointer-events: none;
   z-index: 0;
   user-select: none;
@@ -222,27 +272,46 @@
 }
 
 /* ==========================================================================
-   Class Card (Material 3 with Left Accent Bar & Multi-Session Layout)
+   Class Card (Liquid Glass / Material 3 Glassmorphism)
    ========================================================================== */
-.mg-card {
-  background: #ffffff;
-  border: 1px solid #dadce0;
-  border-left: 4px solid var(--mg-theme-accent, #1a73e8);
-  border-radius: 12px;
+.mg-card,
+.meetgita-card {
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%); /* Safari & WebKit support */
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-left: 4px solid var(--mg-theme-accent, #1a73e8) !important;
+  border-radius: 16px;
   padding: 16px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   gap: 14px;
-  box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
-  transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.2s cubic-bezier(0.2, 0, 0, 1);
+  box-shadow:
+    0 8px 32px 0 rgba(31, 38, 135, 0.08),
+    0 1px 2px 0 rgba(60, 64, 67, 0.1),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.7);
+  transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.2s cubic-bezier(0.2, 0, 0, 1), background-color 0.2s ease;
   box-sizing: border-box;
   position: relative;
+  z-index: 1;
 }
 
-.mg-card:hover {
+.mg-card:hover,
+.meetgita-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 14px rgba(60, 64, 67, 0.18);
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow:
+    0 12px 36px 0 rgba(31, 38, 135, 0.12),
+    0 2px 6px 0 rgba(60, 64, 67, 0.15),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.9);
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .mg-card,
+  .meetgita-card {
+    background: rgba(255, 255, 255, 0.92);
+  }
 }
 
 /* Card Header: Avatar, Subject Title, Teacher, Subject Code */
@@ -356,20 +425,20 @@
   justify-content: space-between;
   gap: 8px;
   padding: 6px 10px;
-  background-color: #f8f9fa;
-  border: 1px solid #e8eaed;
-  border-radius: 8px;
+  background-color: rgba(248, 249, 250, 0.65);
+  border: 1px solid rgba(232, 234, 237, 0.65);
+  border-radius: 10px;
   transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
 .mg-session-row:hover {
-  background-color: #f1f3f4;
-  border-color: #dadce0;
+  background-color: rgba(241, 243, 244, 0.85);
+  border-color: rgba(218, 220, 224, 0.8);
 }
 
 .mg-session-row.is-live-row {
-  background-color: #fff8f7;
-  border-color: #fad2cf;
+  background-color: rgba(255, 248, 247, 0.85);
+  border-color: rgba(250, 210, 207, 0.85);
 }
 
 .mg-session-left {
@@ -463,7 +532,7 @@
   fill: #ffffff;
 }
 
-/* Compact Borderless Copy Button with Hover Circle */
+/* Compact Borderless Copy Button with Glass Treatment */
 .mg-btn-icon {
   display: inline-flex;
   align-items: center;
@@ -471,19 +540,22 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  border: none !important;
-  background-color: transparent !important;
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  background-color: rgba(255, 255, 255, 0.4) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   color: #5f6368;
   cursor: pointer;
-  transition: background-color 0.15s ease, color 0.15s ease;
+  transition: background-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
   position: relative;
   padding: 0;
   flex-shrink: 0;
 }
 
 .mg-btn-icon:hover {
-  background-color: rgba(60, 64, 67, 0.08) !important;
+  background-color: rgba(255, 255, 255, 0.9) !important;
   color: #202124;
+  transform: scale(1.05);
 }
 
 .mg-btn-icon svg {
