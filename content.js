@@ -204,14 +204,14 @@
       <path d="M71 30.5v25.5c-2.5-2-5.2-3.4-8.5-4v-25.5c3.3 0.6 6 2 8.5 4z" fill="#f8b721"/>
     </svg>`,
     codingGitaWatermark: `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="50" cy="17" r="2.2" fill="#5f6368"/>
-      <rect x="15" y="12" width="70" height="51" rx="5" stroke="#5f6368" stroke-width="5.5"/>
-      <path d="M7 64h86c2 0 3.5 1.2 3.5 2.6v0.8c0 1.4-1.5 2.6-3.5 2.6H7c-2 0-3.5-1.2-3.5-2.6v-0.8C3.5 65.2 5 64 7 64z" fill="#5f6368"/>
-      <path d="M27 29v27c3-2.2 6.2-3.8 10-4.4V25c-3.8 0.6-7 2.2-10 4z" fill="#5f6368"/>
-      <path d="M48 25c-8-3-16-2.5-22 1.5v30c6-4 14-4.5 22-1.5V25z" fill="#5f6368"/>
-      <path d="M52 25c8-3 16-2.5 22 1.5v30c-6-4-14-4.5-22-1.5V25z" fill="#5f6368"/>
-      <path d="M73 29v27c-3-2.2-6.2-3.8-10-4.4V25c3.8 0.6 7 2.2 10 4z" fill="#5f6368"/>
-      <text x="50" y="85" text-anchor="middle" font-family="'Google Sans', Roboto, sans-serif" font-size="13" font-weight="700" fill="#5f6368" letter-spacing="0.5">CodingGita</text>
+      <circle cx="50" cy="17" r="2.8" fill="#4a154b"/>
+      <rect x="14" y="11" width="72" height="52" rx="6" stroke="#4a154b" stroke-width="5.5"/>
+      <path d="M6 63h88c2 0 3.5 1.2 3.5 2.6v1c0 1.4-1.5 2.6-3.5 2.6H6c-2 0-3.5-1.2-3.5-2.6v-1C2.5 64.2 4 63 6 63z" fill="#4a154b"/>
+      <path d="M26 28v28c3.2-2.2 6.6-3.8 10.5-4.4V24c-3.9 0.6-7.3 2.2-10.5 4z" fill="#4a154b"/>
+      <path d="M48 24c-8.5-3.2-17-2.6-23.5 1.6v31c6.5-4.2 15-4.8 23.5-1.6V24z" fill="#4a154b"/>
+      <path d="M52 24c8.5-3.2 17-2.6 23.5 1.6v31c-6.5-4.2-15-4.8-23.5-1.6V24z" fill="#4a154b"/>
+      <path d="M74 28v28c-3.2-2.2-6.6-3.8-10.5-4.4V24c3.9 0.6 7.3 2.2 10.5 4z" fill="#4a154b"/>
+      <text x="50" y="86" text-anchor="middle" font-family="'Plus Jakarta Sans', 'Google Sans', Roboto, sans-serif" font-size="14.5" font-weight="800" fill="#4a154b" letter-spacing="0.8">CodingGita</text>
     </svg>`,
     videoCam: `<svg viewBox="0 0 24 24"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>`,
     copy: `<svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>`,
@@ -390,6 +390,31 @@
     const card = document.createElement('div');
     card.className = `mg-card ${hasLiveSession ? 'is-live-card' : ''}`;
 
+    // Interactive Liquid Glass cursor spotlight reflection (inspired by archisvaze/liquid-glass)
+    const glare = document.createElement('div');
+    glare.className = 'mg-card-glare';
+    card.appendChild(glare);
+
+    card.addEventListener('mousemove', (e) => {
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const rotateX = ((y / rect.height) - 0.5) * -4;
+      const rotateY = ((x / rect.width) - 0.5) * 4;
+
+      card.style.setProperty('--mouse-x', `${x}px`);
+      card.style.setProperty('--mouse-y', `${y}px`);
+      card.style.setProperty('--card-rotate-x', `${rotateX.toFixed(2)}deg`);
+      card.style.setProperty('--card-rotate-y', `${rotateY.toFixed(2)}deg`);
+    });
+
+    card.addEventListener('mouseleave', () => {
+      card.style.removeProperty('--card-rotate-x');
+      card.style.removeProperty('--card-rotate-y');
+      card.style.removeProperty('--mouse-x');
+      card.style.removeProperty('--mouse-y');
+    });
+
     // Build session rows dynamically and generically
     const sessionRowsHtml = (cls.sessions || []).map((session, idx) => {
       const meetCode = extractMeetCode(session.link);
@@ -421,7 +446,7 @@
       `;
     }).join('');
 
-    card.innerHTML = `
+    card.innerHTML += `
       <div class="mg-card-header">
         <div class="mg-card-header-left">
           <div class="mg-avatar">
@@ -490,18 +515,12 @@
     const dashboard = document.createElement('div');
     dashboard.id = 'cgmeethub-dashboard';
 
-    // Ambient CodingGita purple cosmic mesh background
-    const bgMesh = document.createElement('div');
-    bgMesh.className = 'mg-bg-mesh';
-    bgMesh.setAttribute('aria-hidden', 'true');
-    bgMesh.innerHTML = `
-      <div class="mg-mesh-orb mg-mesh-orb-1"></div>
-      <div class="mg-mesh-orb mg-mesh-orb-2"></div>
-      <div class="mg-mesh-orb mg-mesh-orb-3"></div>
-      <div class="mg-mesh-orb mg-mesh-orb-4"></div>
-      <div class="mg-watermark">${ICONS.codingGitaWatermark}</div>
-    `;
-    dashboard.appendChild(bgMesh);
+    // Centered CodingGita watermark background visible behind cards
+    const watermark = document.createElement('div');
+    watermark.className = 'mg-watermark';
+    watermark.setAttribute('aria-hidden', 'true');
+    watermark.innerHTML = ICONS.codingGitaWatermark;
+    dashboard.appendChild(watermark);
 
     const liveCount = CG_MEET_HUB_CLASSES.filter(c => c.sessions && c.sessions.some(s => s.status === 'live')).length;
     const upcomingCount = CG_MEET_HUB_CLASSES.filter(c => c.sessions && c.sessions.some(s => s.status === 'upcoming')).length;

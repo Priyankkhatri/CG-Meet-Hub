@@ -1,5 +1,5 @@
 /* ==========================================================================
-   CG Meet Hub - iOS Liquid Glass Stylesheet with CodingGita Purple Aurora
+   CG Meet Hub - Minimal Light Theme with Interactive iOS Liquid Glass
    Inspired by archisvaze/liquid-glass
    ========================================================================== */
 @import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&family=Google+Sans+Text:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Roboto+Mono:wght@400;500;600&display=swap');
@@ -12,29 +12,33 @@
 }
 
 /* ==========================================================================
-   Dashboard Canvas Container with CodingGita Aurora Mesh
+   Dashboard Container (Minimal Light Canvas with Ambient Glow)
    ========================================================================== */
 #cgmeethub-dashboard,
 #meetgita-dashboard {
-  all: initial; /* Scoped reset against external inherited styles */
+  all: initial; /* Scoped reset */
   font-family: 'Google Sans', 'Google Sans Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   display: flex !important;
   flex-direction: column !important;
   position: relative !important;
   width: 100% !important;
-  max-width: 980px !important;
+  max-width: 960px !important;
   margin: 12px auto 24px auto !important;
-  padding: 24px 26px 30px 26px !important;
+  padding: 22px 24px 28px 24px !important;
   border-radius: 24px !important;
-  background: linear-gradient(135deg, #180829 0%, #2a0845 45%, #150524 100%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  background: radial-gradient(circle at 10% 20%, rgba(243, 244, 246, 0.6) 0%, transparent 50%),
+              radial-gradient(circle at 90% 80%, rgba(239, 246, 255, 0.7) 0%, transparent 50%),
+              rgba(255, 255, 255, 0.60) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border: 1px solid rgba(218, 220, 224, 0.7) !important;
   box-shadow:
-    0 24px 60px -10px rgba(18, 2, 33, 0.65),
-    0 4px 16px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
+    0 12px 36px -8px rgba(60, 64, 67, 0.08),
+    0 1px 3px rgba(60, 64, 67, 0.04),
+    inset 0 1px 1px rgba(255, 255, 255, 0.9) !important;
   box-sizing: border-box !important;
-  gap: 22px !important;
-  color: #ffffff !important;
+  gap: 20px !important;
+  color: #1f1f1f !important;
   overflow: hidden !important;
 }
 
@@ -44,75 +48,17 @@
   font-family: inherit;
 }
 
-/* Ambient Cosmic Glow Mesh Orbs (Diffusing Behind Liquid Glass) */
-.mg-bg-mesh {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  overflow: hidden;
-  border-radius: 24px;
-}
-
-.mg-mesh-orb {
-  position: absolute;
-  border-radius: 50%;
-  pointer-events: none;
-  transform: translate3d(0, 0, 0);
-  will-change: transform;
-}
-
-.mg-mesh-orb-1 {
-  top: -60px;
-  left: -40px;
-  width: 420px;
-  height: 420px;
-  background: radial-gradient(circle, #7c3aed 0%, rgba(124, 58, 237, 0) 70%);
-  filter: blur(75px);
-  opacity: 0.60;
-}
-
-.mg-mesh-orb-2 {
-  top: 35%;
-  right: -80px;
-  width: 440px;
-  height: 440px;
-  background: radial-gradient(circle, #f59e0b 0%, rgba(245, 158, 11, 0) 70%);
-  filter: blur(85px);
-  opacity: 0.38;
-}
-
-.mg-mesh-orb-3 {
-  bottom: -60px;
-  left: 20%;
-  width: 420px;
-  height: 420px;
-  background: radial-gradient(circle, #db2777 0%, rgba(219, 39, 119, 0) 70%);
-  filter: blur(80px);
-  opacity: 0.42;
-}
-
-.mg-mesh-orb-4 {
-  bottom: 25%;
-  right: 25%;
-  width: 360px;
-  height: 360px;
-  background: radial-gradient(circle, #2563eb 0%, rgba(37, 99, 235, 0) 70%);
-  filter: blur(75px);
-  opacity: 0.35;
-}
-
-/* Subtle Centered Watermark in Background */
+/* Clearly Visible CodingGita Logo Watermark in Background */
 .mg-watermark {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: min(720px, 94%);
-  max-width: 720px;
+  width: min(700px, 92%);
+  max-width: 700px;
   height: auto;
   aspect-ratio: 1 / 1;
-  opacity: 0.08; /* Soft golden/white glow through liquid glass */
+  opacity: 0.16; /* Clean, noticeable CodingGita watermark */
   pointer-events: none;
   z-index: 0;
   user-select: none;
@@ -125,19 +71,19 @@
 }
 
 .mg-watermark svg * {
-  stroke: #ffffff !important;
-  fill: #ffffff !important;
+  stroke: #4a154b !important;
+  fill: #4a154b !important;
 }
 
 /* ==========================================================================
-   Header Section (Liquid Glass Aesthetic)
+   Header Section (Refined Material Light Surface)
    ========================================================================== */
 .mg-header {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
-  padding-bottom: 18px;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.9);
+  padding-bottom: 16px;
   width: 100%;
   position: relative;
   z-index: 1;
@@ -154,35 +100,35 @@
 .mg-header-left {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
 }
 
-/* CodingGita Brand Emblem Badge */
+/* CodingGita Logo Emblem Badge */
 .mg-brand-badge {
-  width: 44px;
-  height: 44px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.28);
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 0.95);
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow:
-    0 4px 16px rgba(0, 0, 0, 0.25),
-    inset 0 1px 0 rgba(255, 255, 255, 0.55);
+    0 2px 8px rgba(60, 64, 67, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
   flex-shrink: 0;
   transition: transform 0.2s ease;
 }
 
 .mg-brand-badge:hover {
-  transform: scale(1.06) rotate(2deg);
+  transform: scale(1.05);
 }
 
 .mg-logo-icon {
-  width: 26px;
-  height: 26px;
+  width: 24px;
+  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -208,32 +154,30 @@
 
 .mg-title {
   font-family: 'Plus Jakarta Sans', 'Google Sans', sans-serif;
-  font-size: 21px;
+  font-size: 20px;
   font-weight: 700;
-  color: #ffffff;
+  color: #1f1f1f;
   line-height: 1.2;
   margin: 0;
-  letter-spacing: -0.4px;
-  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+  letter-spacing: -0.3px;
 }
 
 .mg-brand-tag {
   font-size: 11px;
   font-weight: 700;
-  color: #fde047;
-  background: rgba(245, 158, 11, 0.22);
-  border: 1px solid rgba(245, 158, 11, 0.45);
+  color: #b45309;
+  background: #fef3c7;
+  border: 1px solid #fde68a;
   padding: 2px 7px;
   border-radius: 6px;
   letter-spacing: 0.3px;
   text-transform: uppercase;
-  backdrop-filter: blur(10px);
 }
 
 .mg-subtitle {
   font-size: 12.5px;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.72);
+  color: #5f6368;
   line-height: 1.3;
 }
 
@@ -249,29 +193,27 @@
   gap: 7px;
   padding: 5px 13px;
   border-radius: 9999px;
-  background: rgba(225, 29, 72, 0.25);
-  border: 1px solid rgba(244, 63, 94, 0.5);
-  color: #fda4af;
+  background: #fce8e6;
+  border: 1px solid #f5c2c7;
+  color: #c5221f;
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.2px;
-  backdrop-filter: blur(16px);
-  box-shadow: 0 2px 10px rgba(225, 29, 72, 0.25);
 }
 
 .mg-pulsing-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background-color: #f43f5e;
-  box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.7);
+  background-color: #d93025;
+  box-shadow: 0 0 0 0 rgba(217, 48, 37, 0.7);
   animation: mgPulse 1.8s infinite cubic-bezier(0.66, 0, 0, 1);
 }
 
 @keyframes mgPulse {
-  0% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.7); }
-  70% { box-shadow: 0 0 0 8px rgba(244, 63, 94, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0); }
+  0% { box-shadow: 0 0 0 0 rgba(217, 48, 37, 0.7); }
+  70% { box-shadow: 0 0 0 8px rgba(217, 48, 37, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(217, 48, 37, 0); }
 }
 
 .mg-ready-badge {
@@ -280,22 +222,21 @@
   gap: 7px;
   padding: 5px 13px;
   border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.10);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  color: rgba(255, 255, 255, 0.85);
+  background: rgba(241, 243, 244, 0.9);
+  border: 1px solid rgba(218, 220, 224, 0.9);
+  color: #3c4043;
   font-size: 12px;
   font-weight: 600;
-  backdrop-filter: blur(16px);
 }
 
 .mg-ready-dot {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background-color: #34d399;
+  background-color: #188038;
 }
 
-/* Liquid Glass Filter Pills */
+/* Minimal Light Filter Pills */
 .mg-filters-wrapper {
   display: flex;
   align-items: center;
@@ -304,13 +245,11 @@
 .mg-filters {
   display: inline-flex;
   align-items: center;
-  background: rgba(0, 0, 0, 0.25);
-  padding: 4px;
-  border-radius: 14px;
-  gap: 5px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: rgba(241, 243, 244, 0.75);
+  padding: 3px;
+  border-radius: 9999px;
+  gap: 4px;
+  border: 1px solid rgba(226, 232, 240, 0.8);
   overflow-x: auto;
   scrollbar-width: none;
 }
@@ -323,14 +262,14 @@
   appearance: none;
   border: 1px solid transparent;
   background: transparent;
-  color: rgba(255, 255, 255, 0.75);
+  color: #444746;
   font-family: 'Google Sans', sans-serif;
   font-size: 13px;
   font-weight: 500;
   padding: 6px 14px;
-  border-radius: 10px;
+  border-radius: 9999px;
   cursor: pointer;
-  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.16s ease;
   white-space: nowrap;
   display: inline-flex;
   align-items: center;
@@ -338,40 +277,38 @@
 }
 
 .mg-filter-chip:hover {
-  color: #ffffff;
-  background: rgba(255, 255, 255, 0.10);
+  color: #1f1f1f;
+  background: rgba(255, 255, 255, 0.6);
 }
 
 .mg-filter-chip.active {
-  background: rgba(255, 255, 255, 0.22);
-  border-color: rgba(255, 255, 255, 0.40);
-  color: #ffffff;
+  background: #ffffff;
+  border-color: rgba(218, 220, 224, 0.9);
+  color: #0b57d0;
   font-weight: 600;
-  box-shadow:
-    0 4px 16px rgba(0, 0, 0, 0.25),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  box-shadow: 0 2px 6px rgba(60, 64, 67, 0.10);
 }
 
 .mg-filter-live-dot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background-color: #f43f5e;
+  background-color: #d93025;
 }
 
 .mg-chip-count {
   font-size: 11px;
   font-weight: 700;
-  background: rgba(255, 255, 255, 0.16);
-  color: #ffffff;
+  background: rgba(0, 0, 0, 0.06);
+  color: #444746;
   padding: 1px 7px;
   border-radius: 9999px;
-  transition: all 0.18s ease;
+  transition: all 0.16s ease;
 }
 
 .mg-filter-chip.active .mg-chip-count {
-  background: #ffffff;
-  color: #1e082c;
+  background: #c2e7ff;
+  color: #001d35;
 }
 
 /* ==========================================================================
@@ -380,7 +317,7 @@
 .mg-cards-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 18px;
+  gap: 16px;
   box-sizing: border-box;
   width: 100%;
   align-items: stretch;
@@ -395,53 +332,65 @@
 }
 
 /* ==========================================================================
-   iOS Liquid Glass Class Card (Pure CSS Refractive Glass)
+   Interactive iOS Liquid Glass Class Card (Cursor Physics & Refraction)
+   Inspired by archisvaze/liquid-glass
    ========================================================================== */
 .mg-card {
-  background: rgba(255, 255, 255, 0.09);
-  backdrop-filter: blur(28px) saturate(190%) contrast(105%);
-  -webkit-backdrop-filter: blur(28px) saturate(190%) contrast(105%);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-top: 1.5px solid rgba(255, 255, 255, 0.50);
-  border-left: 1px solid rgba(255, 255, 255, 0.30);
-  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-top: 1.5px solid rgba(255, 255, 255, 1);
+  border-left: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 18px;
   padding: 18px 20px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 16px;
+  gap: 14px;
   box-shadow:
-    0 16px 40px 0 rgba(0, 0, 0, 0.32),
-    0 2px 6px 0 rgba(0, 0, 0, 0.15),
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.55),
-    inset 0 0 20px 0 rgba(255, 255, 255, 0.05);
+    0 10px 28px -6px rgba(60, 64, 67, 0.07),
+    0 1px 3px rgba(60, 64, 67, 0.04),
+    inset 0 1px 1px rgba(255, 255, 255, 0.95);
+  transform: perspective(800px) rotateX(var(--card-rotate-x, 0deg)) rotateY(var(--card-rotate-y, 0deg));
   transition:
-    transform 0.24s cubic-bezier(0.16, 1, 0.3, 1),
-    background 0.24s ease,
-    border-color 0.24s ease,
-    box-shadow 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+    transform 0.12s ease-out,
+    box-shadow 0.22s ease,
+    background 0.22s ease,
+    border-color 0.22s ease;
   box-sizing: border-box;
   position: relative;
   overflow: hidden;
 }
 
 .mg-card:hover {
-  transform: translateY(-4px) scale(1.008);
-  background: rgba(255, 255, 255, 0.14);
-  border-color: rgba(255, 255, 255, 0.35);
-  border-top-color: rgba(255, 255, 255, 0.70);
+  background: rgba(255, 255, 255, 0.88);
+  border-color: rgba(255, 255, 255, 1);
   box-shadow:
-    0 24px 50px 0 rgba(0, 0, 0, 0.45),
-    0 4px 12px 0 rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.75),
-    inset 0 0 25px 0 rgba(255, 255, 255, 0.10);
+    0 18px 40px -8px rgba(60, 64, 67, 0.12),
+    0 2px 6px rgba(60, 64, 67, 0.06),
+    inset 0 1px 2px rgba(255, 255, 255, 1);
 }
 
-/* Fallback for non-supporting browsers */
-@supports not (backdrop-filter: blur(1px)) {
-  .mg-card {
-    background: rgba(30, 10, 48, 0.88);
-  }
+/* Interactive Cursor-Tracking Liquid Glass Glare / Spotlight Reflection */
+.mg-card-glare {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  z-index: 2;
+  background: radial-gradient(
+    circle 220px at var(--mouse-x, -200px) var(--mouse-y, -200px),
+    rgba(255, 255, 255, 0.70) 0%,
+    rgba(255, 255, 255, 0.25) 45%,
+    transparent 80%
+  );
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.mg-card:hover .mg-card-glare {
+  opacity: 1;
 }
 
 /* Card Header */
@@ -450,6 +399,8 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
+  position: relative;
+  z-index: 1;
 }
 
 .mg-card-header-left {
@@ -462,29 +413,29 @@
 
 /* Frosted Glass Avatar Squircle */
 .mg-avatar {
-  width: 42px;
-  height: 42px;
-  border-radius: 13px;
-  background: rgba(255, 255, 255, 0.16);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  color: #ffffff;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(241, 245, 249, 0.9);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  color: #334155;
   font-size: 14px;
   font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow:
-    0 4px 12px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    0 2px 6px rgba(60, 64, 67, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
   flex-shrink: 0;
-  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.2s ease;
   letter-spacing: 0.5px;
 }
 
 .mg-card:hover .mg-avatar {
-  transform: scale(1.08) rotate(-2deg);
+  transform: scale(1.06);
 }
 
 .mg-header-info {
@@ -498,19 +449,18 @@
   font-family: 'Plus Jakarta Sans', 'Google Sans', sans-serif;
   font-size: 15.5px;
   font-weight: 700;
-  color: #ffffff;
+  color: #1f1f1f;
   line-height: 1.25;
   margin: 0 0 3px 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   letter-spacing: -0.2px;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
 }
 
 .mg-teacher-meta {
   font-size: 12.5px;
-  color: rgba(255, 255, 255, 0.70);
+  color: #5f6368;
   display: flex;
   align-items: center;
   gap: 5px;
@@ -521,19 +471,19 @@
 
 .mg-teacher-name {
   font-weight: 600;
-  color: #ffffff;
+  color: #1f1f1f;
 }
 
 .mg-meta-dot {
-  color: rgba(255, 255, 255, 0.4);
+  color: #9aa0a6;
   font-weight: bold;
 }
 
 .mg-teacher-dept {
-  color: rgba(255, 255, 255, 0.70);
+  color: #5f6368;
 }
 
-/* Frosted Glass Subject Code Chip (Top-Right of Card) */
+/* Subject Code Chip (Top-Right) */
 .mg-subject-code {
   font-family: 'Roboto Mono', monospace;
   font-size: 11px;
@@ -541,23 +491,24 @@
   letter-spacing: 0.5px;
   padding: 3px 9px;
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.12);
-  color: #fde047;
-  border: 1px solid rgba(253, 224, 71, 0.35);
-  backdrop-filter: blur(12px);
+  background: rgba(241, 245, 249, 0.9);
+  color: #475569;
+  border: 1px solid rgba(203, 213, 225, 0.85);
   white-space: nowrap;
   flex-shrink: 0;
 }
 
 /* ==========================================================================
-   Sessions List (Frosted Glass Capsules)
+   Sessions List (Capsules)
    ========================================================================== */
 .mg-sessions-list {
   display: flex;
   flex-direction: column;
-  gap: 9px;
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
-  padding-top: 14px;
+  gap: 8px;
+  border-top: 1px solid rgba(226, 232, 240, 0.8);
+  padding-top: 12px;
+  position: relative;
+  z-index: 1;
 }
 
 .mg-session-row {
@@ -565,24 +516,23 @@
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  padding: 8px 12px;
-  background: rgba(0, 0, 0, 0.22);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 7px 12px;
+  background: rgba(248, 250, 252, 0.75);
+  border: 1px solid rgba(226, 232, 240, 0.85);
   border-radius: 12px;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  transition: all 0.18s ease;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: all 0.16s ease;
 }
 
 .mg-session-row:hover {
-  background: rgba(0, 0, 0, 0.32);
-  border-color: rgba(255, 255, 255, 0.24);
+  background: rgba(241, 245, 249, 0.95);
+  border-color: rgba(203, 213, 225, 0.95);
 }
 
 .mg-session-row.is-live-row {
-  background: rgba(225, 29, 72, 0.22);
-  border-color: rgba(244, 63, 94, 0.45);
-  box-shadow: 0 0 0 1px rgba(244, 63, 94, 0.3);
+  background: #fce8e6;
+  border-color: #f5c2c7;
 }
 
 .mg-session-left {
@@ -597,12 +547,11 @@
 .mg-session-label {
   font-size: 11.5px;
   font-weight: 600;
-  color: #ffffff;
-  padding: 3px 9px;
-  background: rgba(255, 255, 255, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: #334155;
+  padding: 3px 8px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(226, 232, 240, 0.9);
   border-radius: 6px;
-  backdrop-filter: blur(10px);
   white-space: nowrap;
 }
 
@@ -613,11 +562,10 @@
   gap: 5px;
   font-size: 10.5px;
   font-weight: 700;
-  padding: 2.5px 8px;
+  padding: 2px 7px;
   border-radius: 9999px;
-  background: rgba(225, 29, 72, 0.35);
-  border: 1px solid rgba(244, 63, 94, 0.55);
-  color: #fda4af;
+  background: #d93025;
+  color: #ffffff;
   letter-spacing: 0.3px;
   white-space: nowrap;
 }
@@ -625,7 +573,7 @@
 .mg-session-link-preview {
   font-family: 'Roboto Mono', monospace;
   font-size: 11.5px;
-  color: #93c5fd;
+  color: #0b57d0;
   text-decoration: none;
   display: inline-flex;
   align-items: center;
@@ -637,7 +585,7 @@
 }
 
 .mg-link-icon {
-  color: #60a5fa;
+  color: #1a73e8;
   flex-shrink: 0;
 }
 
@@ -648,13 +596,13 @@
   flex-shrink: 0;
 }
 
-/* Primary "Join Class" Button */
+/* Primary "Join Class" Pill Button */
 .mg-btn-join {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 5px;
-  background: linear-gradient(135deg, #1a73e8 0%, #0b57d0 100%);
+  background: #0b57d0;
   color: #ffffff;
   font-family: 'Google Sans', sans-serif;
   font-size: 12px;
@@ -664,25 +612,21 @@
   text-decoration: none;
   border: none;
   cursor: pointer;
-  box-shadow:
-    0 4px 14px rgba(26, 115, 232, 0.45),
-    inset 0 1px 0 rgba(255, 255, 255, 0.4);
-  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 6px rgba(11, 87, 208, 0.25);
+  transition: all 0.16s cubic-bezier(0.16, 1, 0.3, 1);
   white-space: nowrap;
 }
 
 .mg-btn-join:hover {
-  background: linear-gradient(135deg, #1557b0 0%, #0d47a1 100%);
+  background: #0842a0;
   transform: translateY(-1px);
-  box-shadow:
-    0 6px 18px rgba(26, 115, 232, 0.60),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  box-shadow: 0 4px 10px rgba(11, 87, 208, 0.35);
   color: #ffffff;
 }
 
 .mg-btn-join:active {
   transform: translateY(0);
-  box-shadow: 0 2px 6px rgba(26, 115, 232, 0.3);
+  box-shadow: 0 1px 3px rgba(11, 87, 208, 0.2);
 }
 
 .mg-btn-join svg {
@@ -691,20 +635,19 @@
   fill: #ffffff;
 }
 
-/* Secondary Frosted Glass Copy Link Button */
+/* Secondary Copy Link Button */
 .mg-btn-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.20) !important;
-  background: rgba(255, 255, 255, 0.12) !important;
-  color: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.9) !important;
+  background: rgba(255, 255, 255, 0.9) !important;
+  color: #475569;
   cursor: pointer;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 1px 3px rgba(60, 64, 67, 0.06);
   transition: all 0.15s ease;
   position: relative;
   padding: 0;
@@ -712,21 +655,23 @@
 }
 
 .mg-btn-icon:hover {
-  background: rgba(255, 255, 255, 0.22) !important;
-  border-color: rgba(255, 255, 255, 0.40) !important;
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #0b57d0;
   transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(60, 64, 67, 0.12);
 }
 
 .mg-btn-icon svg {
-  width: 15px;
-  height: 15px;
+  width: 14px;
+  height: 14px;
   fill: currentColor;
 }
 
 .mg-btn-icon.copied {
-  background: rgba(16, 185, 129, 0.3) !important;
-  border-color: rgba(52, 211, 153, 0.6) !important;
-  color: #a7f3d0;
+  background: #e6f4ea !important;
+  border-color: #a8dab5 !important;
+  color: #137333;
 }
 
 .mg-btn-icon::after {
@@ -735,7 +680,7 @@
   bottom: 125%;
   left: 50%;
   transform: translateX(-50%) translateY(4px);
-  background: #0f172a;
+  background: #1f1f1f;
   color: #ffffff;
   font-size: 11px;
   font-weight: 500;
@@ -747,7 +692,7 @@
   pointer-events: none;
   transition: opacity 0.15s ease, transform 0.15s ease;
   z-index: 100;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
 .mg-btn-icon:hover::after {
@@ -761,15 +706,13 @@
   bottom: 24px;
   left: 50%;
   transform: translateX(-50%) translateY(20px);
-  background: rgba(15, 23, 42, 0.92);
-  backdrop-filter: blur(20px);
+  background: #1f1f1f;
   color: #f8fafc;
   padding: 10px 18px;
   border-radius: 9999px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
   font-size: 13px;
   font-weight: 500;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -800,33 +743,32 @@
   padding: 48px 16px;
   text-align: center;
   gap: 12px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px dashed rgba(255, 255, 255, 0.2);
-  border-radius: 20px;
-  backdrop-filter: blur(20px);
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px dashed rgba(218, 220, 224, 0.8);
+  border-radius: 18px;
 }
 
 .mg-empty-icon {
   width: 52px;
   height: 52px;
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.12);
+  background: #f1f3f4;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #cbd5e1;
+  color: #5f6368;
 }
 
 .mg-empty-title {
   font-family: 'Plus Jakarta Sans', 'Google Sans', sans-serif;
   font-size: 16px;
   font-weight: 700;
-  color: #ffffff;
+  color: #1f1f1f;
   margin: 0;
 }
 
 .mg-empty-subtitle {
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.7);
+  color: #5f6368;
   margin: 0;
 }
