@@ -385,16 +385,10 @@
 
   function renderCard(cls) {
     const initials = cls.teacherInitials || getInitials(cls.teacher);
-    const theme = TEACHER_THEMES[initials] || DEFAULT_THEME;
     const hasLiveSession = cls.sessions && cls.sessions.some(s => s.status === 'live');
 
     const card = document.createElement('div');
     card.className = `mg-card ${hasLiveSession ? 'is-live-card' : ''}`;
-    card.style.setProperty('--mg-theme-primary', theme.primary);
-    card.style.setProperty('--mg-theme-bg', theme.bg);
-    card.style.setProperty('--mg-theme-accent', theme.accent);
-    card.style.setProperty('--mg-theme-rgb', theme.rgb);
-    card.style.setProperty('--mg-theme-gradient', theme.gradient);
 
     // Build session rows dynamically and generically
     const sessionRowsHtml = (cls.sessions || []).map((session, idx) => {
@@ -428,7 +422,6 @@
     }).join('');
 
     card.innerHTML = `
-      <div class="mg-card-accent-bar"></div>
       <div class="mg-card-header">
         <div class="mg-card-header-left">
           <div class="mg-avatar">
