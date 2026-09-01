@@ -161,15 +161,15 @@
      2. Per-Teacher Material Palette Configuration
      ========================================================================== */
   const TEACHER_THEMES = {
-    "RR": { primary: "#0b57d0", bg: "#e8f0fe", accent: "#1a73e8" }, // Google Blue (Rajesh Ranjan Sir)
-    "AS": { primary: "#137333", bg: "#e6f4ea", accent: "#1e8e3e" }, // Google Green (Adil Sir)
-    "NJ": { primary: "#6e41c0", bg: "#f3e8fd", accent: "#8430ce" }, // Violet Purple (Next.js Sir)
-    "SS": { primary: "#b06000", bg: "#fef3e2", accent: "#e37400" }, // Amber Orange (Samir Sir)
-    "NS": { primary: "#007b83", bg: "#e0f2f1", accent: "#0097a7" }, // Teal Cyan (Neel Sir)
-    "SM": { primary: "#c5221f", bg: "#fce8e6", accent: "#d93025" }, // Coral Red (Sumit Sir)
-    "YS": { primary: "#1b5e20", bg: "#e8f5e9", accent: "#2e7d32" }, // Emerald Forest (Yogesh Sir)
+    "RR": { primary: "#2563eb", bg: "#eff6ff", accent: "#3b82f6", rgb: "37, 99, 235", gradient: "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)" }, // React.js - Modern Electric Blue
+    "AS": { primary: "#059669", bg: "#ecfdf5", accent: "#10b981", rgb: "5, 150, 105", gradient: "linear-gradient(135deg, #10b981 0%, #047857 100%)" }, // DBMS - Emerald Green
+    "NJ": { primary: "#7c3aed", bg: "#f5f3ff", accent: "#8b5cf6", rgb: "124, 58, 237", gradient: "linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)" }, // Next.js - Vivid Violet
+    "SS": { primary: "#d97706", bg: "#fffbeb", accent: "#f59e0b", rgb: "217, 119, 6", gradient: "linear-gradient(135deg, #f59e0b 0%, #b45309 100%)" }, // DSA - Amber Flame
+    "NS": { primary: "#0891b2", bg: "#ecfeff", accent: "#06b6d4", rgb: "8, 145, 178", gradient: "linear-gradient(135deg, #06b6d4 0%, #0e7490 100%)" }, // General - Cyan Teal
+    "SM": { primary: "#e11d48", bg: "#fff1f2", accent: "#f43f5e", rgb: "225, 29, 72", gradient: "linear-gradient(135deg, #f43f5e 0%, #be123c 100%)" }, // Subject TBD - Rose Ruby
+    "YS": { primary: "#15803d", bg: "#f0fdf4", accent: "#22c55e", rgb: "21, 128, 61", gradient: "linear-gradient(135deg, #22c55e 0%, #166534 100%)" }, // MongoDB - Vibrant Forest
   };
-  const DEFAULT_THEME = { primary: "#0b57d0", bg: "#e8f0fe", accent: "#1a73e8" };
+  const DEFAULT_THEME = { primary: "#2563eb", bg: "#eff6ff", accent: "#3b82f6", rgb: "37, 99, 235", gradient: "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)" };
 
   /* ==========================================================================
      3. Helper Functions & SVG Icons
@@ -393,6 +393,8 @@
     card.style.setProperty('--mg-theme-primary', theme.primary);
     card.style.setProperty('--mg-theme-bg', theme.bg);
     card.style.setProperty('--mg-theme-accent', theme.accent);
+    card.style.setProperty('--mg-theme-rgb', theme.rgb);
+    card.style.setProperty('--mg-theme-gradient', theme.gradient);
 
     // Build session rows dynamically and generically
     const sessionRowsHtml = (cls.sessions || []).map((session, idx) => {
@@ -407,14 +409,18 @@
           <div class="mg-session-left">
             <span class="mg-session-label">${session.label || `Session ${idx + 1}`}</span>
             ${liveBadge}
-            <span class="mg-session-link-preview" title="${session.link}">meet.google.com/${meetCode}</span>
+            <span class="mg-session-link-preview" title="${session.link}">
+              <svg class="mg-link-icon" viewBox="0 0 24 24" width="12" height="12"><path fill="currentColor" d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
+              meet.google.com/${meetCode}
+            </span>
           </div>
           <div class="mg-session-actions">
             <button type="button" class="mg-btn-icon" data-link="${session.link}" data-tooltip="Copy meeting link" aria-label="Copy meeting link">
               ${ICONS.copy}
             </button>
             <a href="${session.link}" class="mg-btn-join" target="_blank" rel="noopener noreferrer">
-              ${ICONS.videoCam} Join
+              ${ICONS.videoCam}
+              <span>Join</span>
             </a>
           </div>
         </div>
@@ -422,9 +428,10 @@
     }).join('');
 
     card.innerHTML = `
+      <div class="mg-card-accent-bar"></div>
       <div class="mg-card-header">
         <div class="mg-card-header-left">
-          <div class="mg-avatar" style="background-color: ${theme.bg}; color: ${theme.primary}; border-color: ${theme.accent};">
+          <div class="mg-avatar">
             ${initials}
           </div>
           <div class="mg-header-info">
@@ -490,18 +497,7 @@
     const dashboard = document.createElement('div');
     dashboard.id = 'cgmeethub-dashboard';
 
-    // Ambient liquid glass glow blobs behind cards
-    const blobs = document.createElement('div');
-    blobs.className = 'mg-blobs-container';
-    blobs.setAttribute('aria-hidden', 'true');
-    blobs.innerHTML = `
-      <div class="mg-blob mg-blob-1"></div>
-      <div class="mg-blob mg-blob-2"></div>
-      <div class="mg-blob mg-blob-3"></div>
-    `;
-    dashboard.appendChild(blobs);
-
-    // Centered CodingGita brand watermark
+    // Centered subtle watermark
     const watermark = document.createElement('div');
     watermark.className = 'mg-watermark';
     watermark.setAttribute('aria-hidden', 'true');
@@ -516,10 +512,18 @@
     header.innerHTML = `
       <div class="mg-header-top">
         <div class="mg-header-left">
-          <div class="mg-logo-icon" title="CodingGita">
-            ${ICONS.codingGitaLogo}
+          <div class="mg-brand-badge">
+            <div class="mg-logo-icon" title="CodingGita">
+              ${ICONS.codingGitaLogo}
+            </div>
           </div>
-          <h2 class="mg-title">CG Meet Hub</h2>
+          <div class="mg-title-lockup">
+            <div class="mg-title-row">
+              <h2 class="mg-title">CG Meet Hub</h2>
+              <span class="mg-brand-tag">CodingGita</span>
+            </div>
+            <span class="mg-subtitle">Live Class Schedule & Direct Access</span>
+          </div>
         </div>
         <div class="mg-header-right">
           ${
@@ -528,20 +532,31 @@
                   <span class="mg-pulsing-dot"></span>
                   <span>${liveCount} Live Now</span>
                 </div>`
-              : ''
+              : `<div class="mg-ready-badge">
+                  <span class="mg-ready-dot"></span>
+                  <span>${CG_MEET_HUB_CLASSES.length} Classes Today</span>
+                </div>`
           }
         </div>
       </div>
-      <div class="mg-filters">
-        <button type="button" class="mg-filter-chip ${activeFilter === 'all' ? 'active' : ''}" data-filter="all">
-          All Classes <span class="mg-chip-count">${CG_MEET_HUB_CLASSES.length}</span>
-        </button>
-        <button type="button" class="mg-filter-chip ${activeFilter === 'live' ? 'active' : ''}" data-filter="live">
-          Live Now <span class="mg-chip-count">${liveCount}</span>
-        </button>
-        <button type="button" class="mg-filter-chip ${activeFilter === 'upcoming' ? 'active' : ''}" data-filter="upcoming">
-          Upcoming <span class="mg-chip-count">${upcomingCount}</span>
-        </button>
+      <div class="mg-filters-wrapper">
+        <div class="mg-filters">
+          <button type="button" class="mg-filter-chip ${activeFilter === 'all' ? 'active' : ''}" data-filter="all">
+            <svg viewBox="0 0 24 24" width="13" height="13"><path fill="currentColor" d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+            <span>All Classes</span>
+            <span class="mg-chip-count">${CG_MEET_HUB_CLASSES.length}</span>
+          </button>
+          <button type="button" class="mg-filter-chip ${activeFilter === 'live' ? 'active' : ''}" data-filter="live">
+            <span class="mg-filter-live-dot"></span>
+            <span>Live Now</span>
+            <span class="mg-chip-count">${liveCount}</span>
+          </button>
+          <button type="button" class="mg-filter-chip ${activeFilter === 'upcoming' ? 'active' : ''}" data-filter="upcoming">
+            <svg viewBox="0 0 24 24" width="13" height="13"><path fill="currentColor" d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
+            <span>Upcoming</span>
+            <span class="mg-chip-count">${upcomingCount}</span>
+          </button>
+        </div>
       </div>
     `;
 
