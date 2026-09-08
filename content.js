@@ -135,6 +135,18 @@
         },
       ],
     },
+    {
+      id: "vikas",
+      teacher: "Vikas Sir",
+      teacherInitials: "VS",
+      sessions: [
+        {
+          label: "Link 1",
+          link: "https://meet.google.com/oqw-jcuu-hch",
+          status: "upcoming",
+        },
+      ],
+    },
   ];
   const MEETGITA_CLASSES = CG_MEET_HUB_CLASSES;
 
