@@ -540,7 +540,7 @@
               <h2 class="mg-title">CG Meet Hub</h2>
               <span class="mg-brand-tag">CodingGita</span>
             </div>
-            <span class="mg-subtitle">Live Class Schedule & Direct Access</span>
+            <span class="mg-subtitle">Live Class Schedule</span>
           </div>
         </div>
         <div class="mg-header-right">
