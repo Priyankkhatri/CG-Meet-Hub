@@ -42,134 +42,95 @@
      ========================================================================== */
   const CG_MEET_HUB_CLASSES = [
     {
-      id: "react",
-      subjectCode: "CS-301",
-      subject: "React.js Development",
+      id: "rajesh-ranjan",
       teacher: "Rajesh Ranjan Sir",
       teacherInitials: "RR",
-      department: "Computer Science & Engineering",
       sessions: [
         {
           label: "Link 1",
           link: "https://meet.google.com/zkb-hdxv-aba",
-          startTime: "09:00 AM",
-          endTime: "10:30 AM",
           status: "upcoming",
         },
         {
           label: "Link 2",
           link: "https://meet.google.com/hwu-yqkb-zyi",
-          startTime: "11:00 AM",
-          endTime: "12:30 PM",
           status: "upcoming",
         },
       ],
     },
     {
-      id: "dbms",
-      subjectCode: "CS-205",
-      subject: "Database Management Systems",
+      id: "adil",
       teacher: "Adil Sir",
       teacherInitials: "AS",
-      department: "Information Technology",
       sessions: [
         {
           label: "Link 1",
           link: "https://meet.google.com/mqs-fenu-wkc",
-          startTime: "09:00 AM",
-          endTime: "10:30 AM",
           status: "upcoming",
         },
         {
           label: "Link 2",
           link: "https://meet.google.com/mfy-tqua-keb",
-          startTime: "11:00 AM",
-          endTime: "12:30 PM",
           status: "upcoming",
         },
       ],
     },
     {
       id: "nextjs",
-      subjectCode: "CS-310",
-      subject: "Next.js Development",
       teacher: "Next.js Sir",
       teacherInitials: "NJ",
-      department: "Computer Science & Engineering",
       sessions: [
         {
           label: "Link 1",
           link: "https://meet.google.com/xhb-ghvy-oys",
-          startTime: "01:00 PM",
-          endTime: "02:30 PM",
           status: "upcoming",
         },
       ],
     },
     {
-      id: "dsa",
-      subjectCode: "CS-201",
-      subject: "Data Structures & Algorithms",
+      id: "samir",
       teacher: "Samir Sir",
       teacherInitials: "SS",
-      department: "Computer Science & Engineering",
       sessions: [
         {
           label: "Link 1",
           link: "https://meet.google.com/onx-qzxa-sao",
-          startTime: "02:45 PM",
-          endTime: "04:15 PM",
           status: "upcoming",
         },
       ],
     },
     {
       id: "neel",
-      subjectCode: "GEN-000",
-      subject: "General Session",
       teacher: "Neel Sir",
       teacherInitials: "NS",
-      department: "Computer Science & Engineering",
       sessions: [
         {
           label: "Link 1",
           link: "https://meet.google.com/baj-jazt-nit",
-          startTime: "04:30 PM",
-          endTime: "05:30 PM",
           status: "upcoming",
         },
       ],
     },
     {
       id: "sumit",
-      subjectCode: "GEN-001",
-      subject: "Subject TBD",
       teacher: "Sumit Sir",
       teacherInitials: "SM",
-      department: "Computer Science & Engineering",
       sessions: [
         {
           label: "Link 1",
           link: "https://meet.google.com/uhk-yvok-tqy",
-          startTime: "05:45 PM",
-          endTime: "06:45 PM",
           status: "upcoming",
         },
       ],
     },
     {
-      id: "mongodb",
-      subjectCode: "CS-220",
-      subject: "MongoDB",
+      id: "yogesh",
       teacher: "Yogesh Sir",
       teacherInitials: "YS",
-      department: "Computer Science & Engineering",
       sessions: [
         {
           label: "Link 1",
           link: "https://meet.google.com/odt-xfzb-emm",
-          startTime: "07:00 PM",
-          endTime: "08:00 PM",
           status: "upcoming",
         },
       ],
@@ -481,16 +442,8 @@
             ${initials}
           </div>
           <div class="mg-header-info">
-            <h3 class="mg-subject-title" title="${cls.subject}">${cls.subject}</h3>
-            <div class="mg-teacher-meta">
-              <span class="mg-teacher-name">${cls.teacher}</span>
-              <span class="mg-meta-dot">·</span>
-              <span class="mg-teacher-dept">${cls.department || 'CodingGita'}</span>
-            </div>
+            <h3 class="mg-subject-title" title="${cls.teacher}">${cls.teacher}</h3>
           </div>
-        </div>
-        <div class="mg-card-header-right">
-          <span class="mg-subject-code">${cls.subjectCode || 'CLASS'}</span>
         </div>
       </div>
       <div class="mg-sessions-list">
