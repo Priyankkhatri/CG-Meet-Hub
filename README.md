@@ -1,13 +1,13 @@
-# CG Meet Hub - Google Meet Class Schedule Chrome Extension
+# CG Meet Hub - Google Meet Faculty Schedule Chrome Extension
 
-**CG Meet Hub** is a Manifest V3 Chrome Extension that injects a native Google Material Design 3 class schedule dashboard directly into the Google Meet homepage (`https://meet.google.com/`), seamlessly replacing the empty state carousel with an interactive class timetable.
+**CG Meet Hub** is a Manifest V3 Chrome Extension that injects a native Google Material Design 3 faculty class schedule dashboard directly into the Google Meet homepage (`https://meet.google.com/`), seamlessly replacing the empty state illustration with an interactive timetable organized by teacher.
 
 ---
 
 ## 🚀 Features
 
-- **Google Material Design 3 (M3) UI**: Matches Google Meet's native light and dark modes, typography (`Google Sans`, `Google Sans Text`, `Roboto`), borders, elevation, and color palettes.
-- **Dynamic Class Cards**: Displays subject code, title, instructor name, department, live status badge with pulsing animation, and time slots.
+- **Google Material Design 3 (M3) UI**: Matches Google Meet's native typography (`Google Sans`, `Google Sans Text`, `Roboto`), dynamic per-instructor color accents, and elevation tokens.
+- **Teacher-Centric Schedule Cards**: Identifies sessions by Faculty Name with custom avatar squircle initials and direct access meeting codes.
 - **One-Click Actions**:
   - 🎥 **Join Class**: Primary Google Blue pill button launching the meeting link directly.
   - 📋 **Copy Link**: Secondary icon button with clipboard copy and animated Google-style feedback toast.
