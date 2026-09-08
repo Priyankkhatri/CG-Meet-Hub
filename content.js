@@ -395,13 +395,14 @@
       if (rafId) cancelAnimationFrame(rafId);
       rafId = requestAnimationFrame(() => {
         const rect = card.getBoundingClientRect();
+        if (!rect.width || !rect.height) return;
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
-        const rotateX = ((y / rect.height) - 0.5) * -5;
-        const rotateY = ((x / rect.width) - 0.5) * 5;
+        const rotateX = ((y / rect.height) - 0.5) * -4;
+        const rotateY = ((x / rect.width) - 0.5) * 4;
 
-        card.style.setProperty('--mouse-x', `${x}px`);
-        card.style.setProperty('--mouse-y', `${y}px`);
+        card.style.setProperty('--mouse-x', `${x.toFixed(1)}px`);
+        card.style.setProperty('--mouse-y', `${y.toFixed(1)}px`);
         card.style.setProperty('--card-rotate-x', `${rotateX.toFixed(2)}deg`);
         card.style.setProperty('--card-rotate-y', `${rotateY.toFixed(2)}deg`);
       });
