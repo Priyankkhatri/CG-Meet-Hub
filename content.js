@@ -178,7 +178,7 @@
   }
 
   function computeSessionStatus(session, now = new Date()) {
-    if (!session.startTime || !session.endTime) return session.status || "upcoming";
+    if (!session.startTime || !session.endTime) return session.status || "available";
     const nowMinutes = now.getHours() * 60 + now.getMinutes();
     const start = parseTimeToMinutes(session.startTime);
     const end = parseTimeToMinutes(session.endTime);
