@@ -8,8 +8,9 @@
 
 - **Google Material Design 3 (M3) UI**: Matches Google Meet's native typography (`Google Sans`, `Google Sans Text`, `Roboto`), dynamic per-instructor color accents, and elevation tokens.
 - **Teacher-Centric Schedule Cards**: Identifies sessions by Faculty Name with custom avatar squircle initials and direct access meeting codes.
+- **Primary & Backup Link Architecture**: Displays Link 1 and Link 2 per faculty for seamless fallback connectivity.
 - **One-Click Actions**:
-  - 🎥 **Join Class**: Primary Google Blue pill button launching the meeting link directly.
+  - 🎥 **Join Class**: Primary Google Blue pill button launching the meeting link directly in a new tab.
   - 📋 **Copy Link**: Secondary icon button with clipboard copy and animated Google-style feedback toast.
 - **Filter Tabs**: Filter by "All Classes", "Live Now", and "Upcoming".
 - **Robust DOM Injection**: Persistent TreeWalker MutationObserver automatically detects Google Meet layout updates, SPA route transitions, tab switches, and gracefully ignores active meeting rooms (`/xxx-yyyy-zzz`).
