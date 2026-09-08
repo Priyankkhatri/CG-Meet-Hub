@@ -377,12 +377,10 @@
    Liquid Glass Card Structure & Interactive Physics
    ========================================================================== */
 .mg-card {
-  background: rgba(255, 255, 255, 0.78);
-  backdrop-filter: blur(24px) saturate(190%) contrast(102%);
-  -webkit-backdrop-filter: blur(24px) saturate(190%) contrast(102%);
-  border: 1.5px solid rgba(255, 255, 255, 0.92);
-  border-top: 2px solid #ffffff;
-  border-left: 1.5px solid #ffffff;
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1.5px solid rgba(255, 255, 255, 0.95);
   border-radius: 20px;
   padding: 18px 20px;
   display: flex;
@@ -390,13 +388,12 @@
   justify-content: space-between;
   gap: 14px;
   box-shadow:
-    0 12px 30px -4px rgba(15, 23, 42, 0.06),
-    0 1px 3px rgba(15, 23, 42, 0.03),
-    inset 0 1.5px 1px rgba(255, 255, 255, 1),
-    inset 0 -1px 2px rgba(0, 0, 0, 0.02);
+    0 6px 18px -4px rgba(15, 23, 42, 0.05),
+    0 1px 3px rgba(15, 23, 42, 0.02),
+    inset 0 1px 1px rgba(255, 255, 255, 1);
   transform: perspective(1000px) rotateX(var(--card-rotate-x, 0deg)) rotateY(var(--card-rotate-y, 0deg));
   transition:
-    transform 0.12s ease-out,
+    transform 0.15s ease-out,
     box-shadow 0.22s ease,
     background 0.22s ease,
     border-color 0.22s ease;
