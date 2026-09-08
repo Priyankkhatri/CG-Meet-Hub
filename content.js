@@ -50,14 +50,14 @@
       department: "Computer Science & Engineering",
       sessions: [
         {
-          label: "Before Break",
+          label: "Link 1",
           link: "https://meet.google.com/zkb-hdxv-aba",
           startTime: "09:00 AM",
           endTime: "10:30 AM",
           status: "upcoming",
         },
         {
-          label: "After Break",
+          label: "Link 2",
           link: "https://meet.google.com/hwu-yqkb-zyi",
           startTime: "11:00 AM",
           endTime: "12:30 PM",
@@ -74,14 +74,14 @@
       department: "Information Technology",
       sessions: [
         {
-          label: "Before Break",
+          label: "Link 1",
           link: "https://meet.google.com/mqs-fenu-wkc",
           startTime: "09:00 AM",
           endTime: "10:30 AM",
           status: "upcoming",
         },
         {
-          label: "After Break",
+          label: "Link 2",
           link: "https://meet.google.com/mfy-tqua-keb",
           startTime: "11:00 AM",
           endTime: "12:30 PM",
@@ -98,7 +98,7 @@
       department: "Computer Science & Engineering",
       sessions: [
         {
-          label: "Full Session",
+          label: "Link 1",
           link: "https://meet.google.com/xhb-ghvy-oys",
           startTime: "01:00 PM",
           endTime: "02:30 PM",
@@ -115,7 +115,7 @@
       department: "Computer Science & Engineering",
       sessions: [
         {
-          label: "Full Session",
+          label: "Link 1",
           link: "https://meet.google.com/onx-qzxa-sao",
           startTime: "02:45 PM",
           endTime: "04:15 PM",
@@ -132,7 +132,7 @@
       department: "Computer Science & Engineering",
       sessions: [
         {
-          label: "Full Session",
+          label: "Link 1",
           link: "https://meet.google.com/baj-jazt-nit",
           startTime: "04:30 PM",
           endTime: "05:30 PM",
@@ -149,7 +149,7 @@
       department: "Computer Science & Engineering",
       sessions: [
         {
-          label: "Full Session",
+          label: "Link 1",
           link: "https://meet.google.com/uhk-yvok-tqy",
           startTime: "05:45 PM",
           endTime: "06:45 PM",
@@ -166,7 +166,7 @@
       department: "Computer Science & Engineering",
       sessions: [
         {
-          label: "Full Session",
+          label: "Link 1",
           link: "https://meet.google.com/odt-xfzb-emm",
           startTime: "07:00 PM",
           endTime: "08:00 PM",
