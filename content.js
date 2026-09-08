@@ -156,7 +156,7 @@
   const TEACHER_THEMES = {
     "RR": { primary: "#2563eb", bg: "rgba(37, 99, 235, 0.08)", accent: "#3b82f6", rgb: "37, 99, 235" }, // React.js
     "AS": { primary: "#059669", bg: "rgba(5, 150, 105, 0.08)", accent: "#10b981", rgb: "5, 150, 105" }, // DBMS
-    "NJ": { primary: "#7c3aed", bg: "rgba(124, 58, 237, 0.08)", accent: "#8b5cf6", rgb: "124, 58, 237" }, // Next.js
+    "SJ": { primary: "#7c3aed", bg: "rgba(124, 58, 237, 0.08)", accent: "#8b5cf6", rgb: "124, 58, 237" }, // Satyajeet Sir
     "SS": { primary: "#d97706", bg: "rgba(217, 119, 6, 0.08)", accent: "#f59e0b", rgb: "217, 119, 6" }, // DSA
     "NS": { primary: "#0891b2", bg: "rgba(8, 145, 178, 0.08)", accent: "#06b6d4", rgb: "8, 145, 178" }, // General
     "SM": { primary: "#e11d48", bg: "rgba(225, 29, 72, 0.08)", accent: "#f43f5e", rgb: "225, 29, 72" }, // Subject TBD
