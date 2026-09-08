@@ -49,12 +49,12 @@
         {
           label: "Link 1",
           link: "https://meet.google.com/zkb-hdxv-aba",
-          status: "upcoming",
+          status: "available",
         },
         {
           label: "Link 2",
           link: "https://meet.google.com/hwu-yqkb-zyi",
-          status: "upcoming",
+          status: "available",
         },
       ],
     },
@@ -66,12 +66,12 @@
         {
           label: "Link 1",
           link: "https://meet.google.com/mqs-fenu-wkc",
-          status: "upcoming",
+          status: "available",
         },
         {
           label: "Link 2",
           link: "https://meet.google.com/mfy-tqua-keb",
-          status: "upcoming",
+          status: "available",
         },
       ],
     },
@@ -83,7 +83,7 @@
         {
           label: "Link 1",
           link: "https://meet.google.com/xhb-ghvy-oys",
-          status: "upcoming",
+          status: "available",
         },
       ],
     },
@@ -95,7 +95,7 @@
         {
           label: "Link 1",
           link: "https://meet.google.com/onx-qzxa-sao",
-          status: "upcoming",
+          status: "available",
         },
       ],
     },
@@ -107,7 +107,7 @@
         {
           label: "Link 1",
           link: "https://meet.google.com/baj-jazt-nit",
-          status: "upcoming",
+          status: "available",
         },
       ],
     },
@@ -119,7 +119,7 @@
         {
           label: "Link 1",
           link: "https://meet.google.com/uhk-yvok-tqy",
-          status: "upcoming",
+          status: "available",
         },
       ],
     },
@@ -131,7 +131,7 @@
         {
           label: "Link 1",
           link: "https://meet.google.com/odt-xfzb-emm",
-          status: "upcoming",
+          status: "available",
         },
       ],
     },
@@ -143,7 +143,7 @@
         {
           label: "Link 1",
           link: "https://meet.google.com/oqw-jcuu-hch",
-          status: "upcoming",
+          status: "available",
         },
       ],
     },
