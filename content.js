@@ -161,6 +161,7 @@
     "NS": { primary: "#0891b2", bg: "rgba(8, 145, 178, 0.08)", accent: "#06b6d4", rgb: "8, 145, 178" }, // General
     "SM": { primary: "#e11d48", bg: "rgba(225, 29, 72, 0.08)", accent: "#f43f5e", rgb: "225, 29, 72" }, // Subject TBD
     "YS": { primary: "#15803d", bg: "rgba(21, 128, 61, 0.08)", accent: "#22c55e", rgb: "21, 128, 61" }, // MongoDB
+    "VS": { primary: "#0284c7", bg: "rgba(2, 132, 199, 0.08)", accent: "#38bdf8", rgb: "2, 132, 199" },
   };
   const DEFAULT_THEME = { primary: "#2563eb", bg: "rgba(37, 99, 235, 0.08)", accent: "#3b82f6", rgb: "37, 99, 235" };
 
