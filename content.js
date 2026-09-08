@@ -76,9 +76,9 @@
       ],
     },
     {
-      id: "nextjs",
-      teacher: "Next.js Sir",
-      teacherInitials: "NJ",
+      id: "satyajeet",
+      teacher: "Satyajeet Sir",
+      teacherInitials: "SJ",
       sessions: [
         {
           label: "Link 1",
